@@ -1,0 +1,63 @@
+/* Estilos básicos para el botón */
+.boton {
+  background-color: rgba(0, 0, 0, 0.6);  /* Fondo oscuro con algo de transparencia */
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  border: 3px solid #fff; /* Borde grueso blanco */
+  border-radius: 15px; /* Bordes redondeados */
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra para dar efecto 3D */
+  transition: all 0.3s ease-in-out; /* Transición suave para hover y click */
+  width: 100%; /* Asegura que todos los botones ocupen el mismo espacio */
+  max-width: 200px; /* Limita el tamaño máximo del botón */
+  /* Elimino el margen entre los botones */
+}
+
+/* Efectos cuando se pasa el mouse (hover) */
+.boton:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Color suave de fondo cuando se pasa el mouse */
+  transform: scale(1.05); /* Aumentar tamaño al pasar el mouse */
+}
+
+/* Efectos cuando el botón es presionado (active) */
+.boton:active {
+  transform: scale(0.95); /* Reducir tamaño al hacer click */
+  background-color: rgba(255, 255, 255, 0.2); /* Fondo más opaco al hacer click */
+}
+
+/* Botón de Ataque */
+.botonAtaque {
+  border-color: #FF4C4C; /* Rojo intenso para el borde */
+  color: #FF4C4C;
+}
+
+.botonAtaque:hover {
+  background-color: #FF4C4C;
+  color: white;
+}
+
+/* Botón de Defensa */
+.botonDefensa {
+  border-color: #00BFFF; /* Azul claro para el borde */
+  color: #00BFFF;
+}
+
+.botonDefensa:hover {
+  background-color: #00BFFF;
+  color: white;
+}
+
+/* Botón de Volver */
+.botonVolver {
+  border-color: #FFD700; /* Amarillo brillante para el borde */
+  color: #FFD700;
+}
+
+.botonVolver:hover {
+  background-color: #FFD700;
+  color: white;
+}
