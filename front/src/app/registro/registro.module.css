@@ -1,0 +1,119 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #232526, #414345);
+  font-family: "Poppins", sans-serif;
+  color: #fff;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.container h1 {
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.field {
+  text-align: left;
+  margin-bottom: 1.2rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #ddd;
+  margin-bottom: 0.3rem;
+}
+
+.container button {
+  background: linear-gradient(to right, #4f46e5, #3b82f6);
+  border: none;
+  color: white;
+  padding: 0.75rem 0;
+  border-radius: 10px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 0.5rem;
+}
+
+.container button:hover {
+  background: linear-gradient(to right, #3b82f6, #4f46e5);
+}
+
+.login-redirect {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.login-link {
+  color: #60a5fa;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-link:hover {
+  color: #93c5fd;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  color: #fff;
+  animation: fadeIn 0.4s ease;
+}
+
+.modal-content button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-content button:hover {
+  background: #3b82f6;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

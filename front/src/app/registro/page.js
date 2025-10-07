@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import Input from "@/components/Input";
-import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import styles from "./registro.module.css";
 
 export default function Registro() {
   const [nombre, setNombre] = useState("");
@@ -21,7 +21,6 @@ export default function Registro() {
   };
 
   async function registroBack() {
-    // VALIDACIÓN DE CAMPOS VACÍOS
     if (!mail || !contraseña || !nombre) {
       showModal("Error", "Todos los campos son obligatorios");
       return;
@@ -41,7 +40,7 @@ export default function Registro() {
       const data = await response.json();
 
       if (data.validar) {
-        router.replace("/login"); // REDIRECCIÓN A LOGIN
+        router.replace("/login");
       } else {
         showModal(
           "Error",
@@ -55,20 +54,20 @@ export default function Registro() {
   }
 
   return (
-    <div className={styles["registro-wrapper"]}>
-      <div className={styles["registro-container"]}>
+    <div className={styles.wrapper}>
+      <div className={styles.container}>
         <h1>Registro</h1>
         <form>
-          <div className={styles["input-group"]}>
+          <div className={styles.field}>
             <label htmlFor="mail">Correo electrónico</label>
             <Input
-              type="mail"
+              type="email"
               placeholder="ejemplo@mail.com"
               onChange={(e) => setMail(e.target.value)}
             />
           </div>
 
-          <div className={styles["input-group"]}>
+          <div className={styles.field}>
             <label htmlFor="contraseña">Contraseña</label>
             <Input
               type="password"
@@ -76,7 +75,8 @@ export default function Registro() {
               onChange={(e) => setContraseña(e.target.value)}
             />
           </div>
-          <div className={styles["input-group"]}>
+
+          <div className={styles.field}>
             <label htmlFor="nombre">Nombre</label>
             <Input
               type="text"
@@ -84,20 +84,16 @@ export default function Registro() {
               onChange={(e) => setNombre(e.target.value)}
             />
           </div>
-          <button
-            type="button"
-            className={styles["btn-registro"]}
-            onClick={registroBack}
-          >
+
+          <button type="button" onClick={registroBack}>
             Registrarse
           </button>
 
-          {/* Texto para ir a login */}
-          <div className={styles["login-redirect"]}>
+          <div className={styles.loginRedirect}>
             <p>
               ¿Ya tienes cuenta?{" "}
               <span
-                className={styles["login-link"]}
+                className={styles.loginLink}
                 onClick={() => router.push("/login")}
               >
                 Iniciar sesión
@@ -106,15 +102,12 @@ export default function Registro() {
           </div>
         </form>
 
-        {/* Modal */}
         {modal.open && (
           <div className={styles.modal}>
-            <div className={styles["modal-content"]}>
+            <div className={styles.modalContent}>
               <h2>{modal.title}</h2>
               <p>{modal.message}</p>
-              <button onClick={closeModal} className={styles["modal-btn"]}>
-                Cerrar
-              </button>
+              <button onClick={closeModal}>Cerrar</button>
             </div>
           </div>
         )}
