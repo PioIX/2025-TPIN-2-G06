@@ -1,14 +1,14 @@
-/* Estilos para el contenedor principal */
-.contenedor {
-  position: fixed;  /* Aseguramos que el menú se fije en la parte inferior */
-  bottom: 0;        /* Pegamos al fondo de la pantalla */
-  left: 0;          /* Pegamos al borde izquierdo */
-  width: 100%;      /* Ocupa todo el ancho */
-  background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro con transparencia */
-  padding: 10px;    /* Espaciado interno */
-  z-index: 1000;    /* Nos aseguramos de que se vea por encima de otros contenidos */
-}
-
 .menu {
-    margin-bottom: -1555555555550%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  /* en vez de height fija, dejamos que se adapte */
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* lo empuja hacia arriba si sobra espacio */
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
 }

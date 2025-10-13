@@ -32,6 +32,78 @@ app.get('/', (req, res) => {
     res.status(200).send({ message: 'GET Home route working fine!' });
 });
 
+app.post('/encontrarPersonaje', async function(req, res) {
+    try {
+        const id = req.body.idHabilidad; // <-- extraemos el ID del body
+        console.log("ID recibido:", id);
+
+        if (!id) {
+            return res.status(400).send({ mensaje: 'No se envió ID de personaje' });
+        }
+
+        // Consulta SQL usando template literal (cuidado con inyección SQL)
+        const query = `
+            SELECT 
+                p.idPersonaje,
+                p.nombre,
+                p.tipo,
+                p.velocidad,
+                p.salud,
+                p.energia,
+                p.fotoPersonaje,
+                p.fuerza,
+                h.idHabilidad,
+                h.nombre AS nombreHabilidad,
+                h.daño,
+                h.es_especial,
+                h.consumo
+            FROM Personajes p
+            INNER JOIN Habilidades_personajes hp ON p.idPersonaje = hp.idPersonaje
+            INNER JOIN Habilidades h ON hp.idHabilidad = h.idHabilidad
+            WHERE p.idPersonaje = ${id} 
+        `;
+
+        // <-- Aquí NO usamos idHabilidad
+        const respuesta = await realizarQuery(query);
+
+        if (respuesta.length === 0) {
+            return res.status(404).send({ mensaje: 'Personaje no encontrado' });
+        }
+
+        const personaje = {
+            idPersonaje: respuesta[0].idPersonaje,
+            nombre: respuesta[0].nombre,
+            tipo: respuesta[0].tipo,
+            velocidad: respuesta[0].velocidad,
+            saludMax: parseInt(respuesta[0].salud),
+            saludActual: parseInt(respuesta[0].salud),
+            energia: respuesta[0].energia,
+            fotoPersonaje: respuesta[0].fotoPersonaje,
+            fuerza: respuesta[0].fuerza,
+            habilidades: []
+        };
+
+        for (let i = 0; i < respuesta.length; i++) {
+            personaje.habilidades.push({
+                idHabilidad: respuesta[i].idHabilidad,
+                nombre: respuesta[i].nombreHabilidad,
+                daño: respuesta[i].daño,
+                es_especial: respuesta[i].es_especial,
+                consumo: respuesta[i].consumo
+            });
+        }
+
+        res.send({ res: personaje });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ mensaje: 'Error en el servidor' });
+    }
+});
+
+
+
+
 
 // ===============================
 //       SOCKET.IO CONFIG
@@ -73,8 +145,8 @@ io.on("connection", (socket) => {
         io.emit('pingAll', { event: "Ping to all", message: data });
     });
 
-    socket.on('sendMessage', data => {
-        io.to(req.session.room).emit('newMessage', { room: req.session.room, message: data });
+    socket.on('mandarDatosInicio', data => {
+        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, datos: data });
     });
 
 

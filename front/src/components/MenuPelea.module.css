@@ -1,44 +1,61 @@
-/* MenuPelea.module.css */
 .contenedor {
   font-family: 'Roboto', sans-serif;
-  width: 100%; /* Hace que el contenedor ocupe todo el ancho disponible */
+  width: 100%;
   display: flex;
-  justify-content: center; /* Centra el contenido horizontalmente */
+  justify-content: center;
+  padding: 10px;
 }
 
-.menuInicio, .menuAtaque {
+/* MENU INICIO */
+.menuInicio {
   display: flex;
-  justify-content: space-between; /* Distribuye el texto y los botones */
+  justify-content: center; /* Centrado horizontal */
+  align-items: center;     /* Centrado vertical */
   text-align: center;
-  background: linear-gradient(135deg, #003366, #0055a5); /* Azul oscuro por defecto */
+  background: linear-gradient(135deg, #003366, #0055a5);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-  width: 100%; /* Hace que ocupe todo el ancho disponible */
-  max-width: 1200px; /* Limita el ancho máximo para que no se estire demasiado en pantallas grandes */
-  height: 150px; /* Altura fija para que no crezca o se encoja */
+  width: 100%;
+  max-width: 2000px;
+  min-height: 150px;
   color: white;
-  transition: background 0.6s ease-in-out; /* Suavizamos la transición del fondo */
+  transition: background 0.6s ease-in-out;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+/* MENU ATAQUE */
+/* MENU ATAQUE */
+.menuAtaque {
+  display: flex;
+  justify-content: center; /* Centramos las columnas en el contenedor */
+  align-items: flex-start;
+  text-align: center;
+  background: linear-gradient(135deg, #003366, #0055a5);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 2000px;
+  min-height: 150px;
+  color: white;
+  transition: background 0.6s ease-in-out;
+  gap: 10px; /* Menor espacio entre columnas */
+  flex-wrap: nowrap;
 }
 
 .menuAtaqueActivo {
-  background: linear-gradient(135deg, #003366, #32CD32); /* Azul oscuro a verde brillante al elegir "Atacar" */
+  background: linear-gradient(135deg, #003366, #32CD32);
 }
 
+/* TEXTO */
 .columnaTexto {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start; /* Alinea el texto al lado izquierdo */
-  width: 50%;
-}
-
-.columnaBotones {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 50%;
+  align-items: flex-start;
+  width: 22%; /* Le damos un poco menos de ancho para que todo quepa mejor */
 }
 
 .titulo {
@@ -53,7 +70,23 @@
   margin-top: 10px;
 }
 
-/* Animación */
+/* BOTONES */
+.columnaBotones {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centrado vertical para que los botones estén juntos */
+  align-items: center;
+  width: 22%; /* Igual que texto para mantener proporción */
+  gap: 6px;  /* Botones más juntos */
+}
+
+/* BOTONES MENÚ INICIO */
+.menuInicio .columnaBotones {
+  gap: 15px; /* Más espacio para que se vea más centrado */
+  justify-content: center;
+}
+
+/* ANIMACIÓN */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -62,5 +95,18 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* MEDIA QUERIES - RESPONSIVO */
+@media (max-width: 900px) {
+  .menuInicio, .menuAtaque {
+    flex-direction: column;
+    align-items: center;
+  }
+  .columnaTexto, .columnaBotones {
+    width: 100%;
+    align-items: center;
+    margin-bottom: 10px;
   }
 }
