@@ -8,17 +8,21 @@ import { useSocket } from "@/hooks/useSocket";
 
 export default function Home() {
   const searchParams = useSearchParams();
-  const [personaje, setPersonaje] = useState(null); // Estado para guardar personaje
+  const [personaje, setPersonaje] = useState(null); 
   const [personajeRival, setPersonajeRival] = useState(null);
   const [id, setId] = useState(null);
   const { socket, isConnected } = useSocket();
 
   useEffect(() => {
     if (!socket) return;
-    socket.emit("joinRoom", { room: searchParams.get("room")});
     socket.on("recibirDatosInicio", (data) => {
-      setPersonajeRival(data.datos.res);
+      console.log(data.id)
+      if(data.id != id){
+        console.log(data)
+        setPersonajeRival(data.data)
+      }
     });
+
   }, [socket]);
 
   useEffect(() => {
@@ -44,7 +48,7 @@ export default function Home() {
 
       if (data.res) {
         setPersonaje(data.res);
-        socket.emit("mandarDatosInicio",{datos:data})
+        socket.emit("entrarPartida",{room: searchParams.get("room"), data, id:id, personaje: personaje.id})
       }
     } catch (error) {
       console.error(error);
@@ -62,11 +66,11 @@ export default function Home() {
   return (
     <main className="contenedor">
 
-      {personaje ? (
+      {personaje && personajeRival ? (
         <div>
           <Personaje nombre={personaje.nombre} imagen={personaje.fotoPersonaje} saludMax={personaje.saludMax} saludActual={personaje.saludActual}></Personaje>
-                    <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual}></Personaje>\
-
+          <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual}></Personaje>
+          {personajeRival.nombre}
           <div className="menu">
             <MenuPelea
               ataques={personaje.habilidades}

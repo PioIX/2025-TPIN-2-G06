@@ -5,11 +5,18 @@ import styles from "./Personaje.module.css";
 
 export default function Personaje(props) {
   const [saludActual, setSaludActual] = useState(props.saludActual);
+  const [energuiaActual, setEnerguiaActual] = useState(props.energuiaActual);
+
   useEffect(() => {
     setSaludActual(props.saludActual);
   }, [props.saludActual]);
 
+  useEffect(() => {
+    setEnerguiaActual(props.energuiaActual);
+  }, [props.energuiaActual]);
+
   const porcentajeVida = (saludActual / props.saludMax) * 100;
+  const porcentajeEnerguia = (saludActual / props.saludMax) * 100;
 
   return (
     <div className={styles.personajeCard}>

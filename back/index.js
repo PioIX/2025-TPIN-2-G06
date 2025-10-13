@@ -32,7 +32,7 @@ app.get('/', (req, res) => {
     res.status(200).send({ message: 'GET Home route working fine!' });
 });
 
-app.post('/encontrarPersonaje', async function(req, res) {
+app.post('/encontrarPersonaje', async function (req, res) {
     try {
         const id = req.body.idHabilidad; // <-- extraemos el ID del body
         console.log("ID recibido:", id);
@@ -77,7 +77,8 @@ app.post('/encontrarPersonaje', async function(req, res) {
             velocidad: respuesta[0].velocidad,
             saludMax: parseInt(respuesta[0].salud),
             saludActual: parseInt(respuesta[0].salud),
-            energia: respuesta[0].energia,
+            energiaActual: parseInt(respuesta[0].energia),
+            energiaMax: parseInt(respuesta[0].energia),
             fotoPersonaje: respuesta[0].fotoPersonaje,
             fuerza: respuesta[0].fuerza,
             habilidades: []
@@ -125,7 +126,6 @@ io.use((socket, next) => {
     sessionMiddleware(socket.request, {}, next);
 });
 
-const rooms = {}; // { "room1": ["juani", "santi"] }
 
 // Eventos socket
 io.on("connection", (socket) => {
@@ -146,81 +146,41 @@ io.on("connection", (socket) => {
     });
 
     socket.on('mandarDatosInicio', data => {
-        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, datos: data });
+        console.log(data)
+        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, data: data.data.res, id: data.id });
     });
 
 
     socket.on('entrarPartida', data => {
         const user = data.id;
         const roomId = data.room;
-
-        // Si ya estaba en otra sala, salir y eliminarlo
-        if (req.session.room && rooms[req.session.room]) {
-            socket.leave(req.session.room);
-            const users = rooms[req.session.room];
-            for (let i = 0; i < users.length; i++) {
-                if (users[i] === user) {
-                    users.splice(i, 1);
-                    i--;
-                }
-            }
-        }
-
-        // Crear la sala si no existe
-        if (!rooms[roomId]) {
-            rooms[roomId] = [];
-        }
-
-        const users = rooms[roomId];
-
-        // Si el usuario ya está, no hacer nada
-        let yaEnSala = false;
-        for (let i = 0; i < users.length; i++) {
-            if (users[i] === user) {
-                yaEnSala = true;
-            }
-        }
-
-        // Si hay más de 2 usuarios y no es uno de los existentes → no puede entrar
-        if (users.length >= 2 && !yaEnSala) {
-            socket.emit('errorPartida', { mensaje: 'La sala está llena (máximo 2 jugadores).' });
-            console.log(`Usuario ${user} no pudo entrar: sala ${roomId} llena.`);
-            return;
-        }
-
-        // Solo agregar si no estaba antes
-        if (!yaEnSala) {
-            users.push(user);
-        }
+        const personaje = data.personaje
+        
 
         req.session.room = roomId;
         socket.join(roomId);
 
         console.log(`Usuario ${user} entró a la sala ${roomId}. Jugadores: ${users.length}`);
-        io.to(roomId).emit('partida', {
-            user,
-            room: roomId,
-            jugadores: users
-        });
+        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, data: data.data.res, id: data.id });
     });
 
 
 
     socket.on('disconnect', () => {
-    console.log("Cliente desconectado");
+        console.log("Cliente desconectado");
 
-    const roomId = req.session.room;
-    const user = req.session.user;
+        const roomId = req.session.room;
+        const user = req.session.user;
 
-    if (roomId && rooms[roomId]) {
-        // Vaciar la sala (eliminar todos los usuarios)
-        rooms[roomId] = [];
-        console.log(`Sala ${roomId} vaciada por desconexión de ${user}`);
+        if (roomId && rooms[roomId]) {
+            // Vaciar la sala (eliminar todos los usuarios)
+            rooms[roomId] = [];
+            console.log(`Sala ${roomId} vaciada por desconexión de ${user}`);
 
-        // Notificar a todos en la sala que se vació
-        io.to(roomId).emit('partida-vacia', { room: roomId });
-    }
-});
+            // Notificar a todos en la sala que se vació
+            io.to(roomId).emit('partida-vacia', { room: roomId });
+        }
+    });
 
-    
+
 });
