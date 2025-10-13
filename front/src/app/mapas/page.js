@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
-
 
 export default function Login() {
   const [email, setMail] = useState("");
   const [password, setContraseña] = useState("");
   const [popup, setPopup] = useState({ open: false, title: "", message: "" });
+  const [mapas, setMapas] = useState([]); // lista de mapas desde el back
+  const [mapaSeleccionado, setMapaSeleccionado] = useState(""); // id del mapa elegido
+
   const router = useRouter();
 
   const showPopup = (title, message) => {
@@ -18,6 +20,25 @@ export default function Login() {
   const closePopup = () => {
     setPopup({ ...popup, open: false });
   };
+
+  // ✅ Obtener los mapas del backend al cargar la página
+  useEffect(() => {
+    async function obtenerMapas() {
+      try {
+        const response = await fetch("http://localhost:4000/obtenerMapas", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await response.json();
+        setMapas(data); // guarda los mapas
+      } catch (error) {
+        console.error("Error al obtener los mapas:", error);
+      }
+    }
+
+    obtenerMapas();
+  }, []);
 
   async function ingresar() {
     const datosLogin = { mail: email, contraseña: password };
@@ -35,10 +56,12 @@ export default function Login() {
         showPopup("Éxito", "Login completado");
         localStorage.setItem("email", result.correo);
         localStorage.setItem("id", result.id);
+        localStorage.setItem("mapaSeleccionado", mapaSeleccionado);
 
         setTimeout(() => {
           closePopup();
-          router.replace("/juego");
+          // ✅ Redirige a la página del mapa elegido
+          router.replace(`/mapa/${mapaSeleccionado}`);
         }, 800);
       } else {
         showPopup("Error", "La contraseña o el mail es incorrecto");
@@ -74,7 +97,30 @@ export default function Login() {
             />
           </div>
 
-          <button type="button" className="btnLogin" onClick={ingresar}>
+          {/* ✅ Selector de mapa */}
+          <div className="inputGroup">
+            <label htmlFor="mapa">Selecciona un mapa</label>
+            <select
+              id="mapa"
+              className="inputSelect"
+              value={mapaSeleccionado}
+              onChange={(e) => setMapaSeleccionado(e.target.value)}
+            >
+              <option value="">-- Elegir mapa --</option>
+              {mapas.map((mapa) => (
+                <option key={mapa.idMapa} value={mapa.idMapa}>
+                  {mapa.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className="btnLogin"
+            onClick={ingresar}
+            disabled={!mapaSeleccionado} // Desactiva si no eligió mapa
+          >
             Ingresar
           </button>
 

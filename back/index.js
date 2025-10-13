@@ -56,6 +56,13 @@ app.post('/usuariosLogin', async (req, res) => {
     }
 });
 
+app.get('/obtenerMapas', async function(req,res){
+    let respuesta;
+    respuesta = await realizarQuery("SELECT * FROM Mapas")
+    res.send(respuesta);
+})
+
+
 // REGISTRO
 app.post('/usuariosRegistro', async (req, res) => {
     console.log(req.body);

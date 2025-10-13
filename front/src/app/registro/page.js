@@ -3,26 +3,25 @@
 import React, { useState } from "react";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
-import styles from "./registro.module.css";
 
 export default function Registro() {
   const [nombre, setNombre] = useState("");
   const [mail, setMail] = useState("");
   const [contraseña, setContraseña] = useState("");
-  const [modal, setModal] = useState({ open: false, title: "", message: "" });
+  const [popup, setPopup] = useState({ open: false, title: "", message: "" });
   const router = useRouter();
 
-  const showModal = (title, message) => {
-    setModal({ open: true, title, message });
+  const showPopup = (title, message) => {
+    setPopup({ open: true, title, message });
   };
 
-  const closeModal = () => {
-    setModal({ ...modal, open: false });
+  const closePopup = () => {
+    setPopup({ ...popup, open: false });
   };
 
   async function registroBack() {
     if (!mail || !contraseña || !nombre) {
-      showModal("Error", "Todos los campos son obligatorios");
+      showPopup("Error", "Todos los campos son obligatorios");
       return;
     }
 
@@ -40,43 +39,29 @@ export default function Registro() {
       const data = await response.json();
 
       if (data.validar) {
-        router.replace("/login");
+        showPopup("Éxito", "Registro completado");
+        setTimeout(() => {
+          closePopup();
+          router.replace("/login");
+        }, 800);
       } else {
-        showModal(
+        showPopup(
           "Error",
           "El email ya está registrado o la contraseña no es válida"
         );
       }
     } catch (error) {
       console.error("Error en el registro:", error);
-      showModal("Error", "Hubo un problema en el servidor");
+      showPopup("Error", "Hubo un problema en el servidor");
     }
   }
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
+    <div className="loginWrapper">
+      <div className="loginContainer">
         <h1>Registro</h1>
         <form>
-          <div className={styles.field}>
-            <label htmlFor="mail">Correo electrónico</label>
-            <Input
-              type="email"
-              placeholder="ejemplo@mail.com"
-              onChange={(e) => setMail(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="contraseña">Contraseña</label>
-            <Input
-              type="password"
-              placeholder="********"
-              onChange={(e) => setContraseña(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.field}>
+          <div className="inputGroup">
             <label htmlFor="nombre">Nombre</label>
             <Input
               type="text"
@@ -85,15 +70,33 @@ export default function Registro() {
             />
           </div>
 
-          <button type="button" onClick={registroBack}>
+          <div className="inputGroup">
+            <label htmlFor="mail">Correo electrónico</label>
+            <Input
+              type="email"
+              placeholder="ejemplo@mail.com"
+              onChange={(e) => setMail(e.target.value)}
+            />
+          </div>
+
+          <div className="inputGroup">
+            <label htmlFor="contraseña">Contraseña</label>
+            <Input
+              type="password"
+              placeholder="********"
+              onChange={(e) => setContraseña(e.target.value)}
+            />
+          </div>
+
+          <button type="button" className="btnLogin" onClick={registroBack}>
             Registrarse
           </button>
 
-          <div className={styles.loginRedirect}>
+          <div className="registroRedirect">
             <p>
               ¿Ya tienes cuenta?{" "}
               <span
-                className={styles.loginLink}
+                className="registroLink"
                 onClick={() => router.push("/login")}
               >
                 Iniciar sesión
@@ -102,12 +105,14 @@ export default function Registro() {
           </div>
         </form>
 
-        {modal.open && (
-          <div className={styles.modal}>
-            <div className={styles.modalContent}>
-              <h2>{modal.title}</h2>
-              <p>{modal.message}</p>
-              <button onClick={closeModal}>Cerrar</button>
+        {popup.open && (
+          <div className="popupOverlay">
+            <div className="popupContent">
+              <h2>{popup.title}</h2>
+              <p>{popup.message}</p>
+              <button onClick={closePopup} className="popupCloseBtn">
+                Cerrar
+              </button>
             </div>
           </div>
         )}
