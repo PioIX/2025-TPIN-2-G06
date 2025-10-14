@@ -1,11 +1,10 @@
+"use client";
+import styles from './button.module.css';
 
-"use client"
 export default function Button(props) {
-
-    return (
-      <>
-        <button onClick={props.onClick} value={props.value}>{props.text}</button>
-      </>
-    );
-  }
-  
+  return (
+    <button onClick={props.onClick} value={props.value} className={styles.boton}>
+      {props.text}
+    </button>
+  );
+}
