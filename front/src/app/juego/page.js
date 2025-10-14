@@ -18,104 +18,115 @@ export default function Home() {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("infoUser", (data) => {
-      if (data.idUsuario != idUsuario) {
-        setidPersonajeRival(parseInt(data.idPersonaje))
-      }
-    });
+
 
   }, [socket]);
 
-  useEffect(()=>{
-    if(idPersonajeRival){
-      encontrarPRival();
-    }
-    
-  },[idPersonajeRival])
+  /**
+   * ==================
+   * RECIBIR PARAMETROS 
+   * ==================
+   * */
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
     const paramIdUsuario = searchParams.get("idUsuario");
     const paramIdRoom = searchParams.get("idRoom");
 
-    console.log("Parámetros:", { paramId, paramIdUsuario, paramIdRoom });
-
     setIdPersonaje(paramId);
     setIdUsuario(paramIdUsuario);
     setIdRoom(paramIdRoom);
-
-
   }, []);
 
   useEffect((
   ) => {
-    if (idPersonaje && idUsuario && idRoom) {
-      encontrarP();
+    if (idPersonaje && idRoom) {
+      encontrarP(idPersonaje).then((res) => {//NO ENTIENDO BIEN ESTO
+        setPersonaje(res);
+      });
     }
-  }, [idPersonaje, idUsuario, idRoom])
+  }, [idPersonaje, idRoom])
+
+  useEffect((
+  ) => {
+    if (idUsuario && idRoom) {
+      encontrarIdRival();
+    }
+  }, [idUsuario, idRoom])
 
 
-  async function encontrarP() {
-    if (!idPersonaje) {
-      console.error("ID de personaje no válido");
-      return;
-    }
+  /*
+  ====================================
+  ENCONTRAR MI PERSONAJE Y EL DEL RIVAL
+  ====================================*/
+
+  async function encontrarP(id) {
     try {
       const response = await fetch('http://localhost:4000/encontrarPersonaje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idHabilidad: idPersonaje })
+        body: JSON.stringify({ idHabilidad: id })
       });
 
       const data = await response.json();
-
       if (data.res) {
-        setPersonaje(data.res);
-        socket.emit("joinRoom", { room: idRoom, idPersonaje:idPersonaje, idUsuario:idUsuario});
+        return (data.res)
       }
     } catch (error) {
       console.error(error);
     }
   }
 
-  async function encontrarPRival() {
-    if (!idPersonajeRival) {
-      console.error("ID de personaje no válido");
-      return;
-    }
+  async function encontrarIdRival() {
     try {
-      const response = await fetch('http://localhost:4000/encontrarPersonaje', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idHabilidad: idPersonajeRival })
+      const response = await fetch("http://localhost:4000/obtenerPersonajeOtroJugador", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idRoom: idRoom,
+          idUsuario: idUsuario,
+        }),
       });
 
       const data = await response.json();
 
-      if (data.res) {
-        setPersonajeRival(data.res);
+      if (data.idPersonaje) {
+        setidPersonajeRival(data.idPersonaje);
+        const rival = await encontrarP(data.idPersonaje);
+        setPersonajeRival(rival);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   }
 
 
-  function cambiarVida() {
-    const nuevaVida = personaje.saludActual - 10;
-    setPersonaje({
-      ...personaje,
-      saludActual: nuevaVida
-    });
-  }
+
 
   return (
     <main className="contenedor">
 
-      {personaje && personajeRival? (
+      {personaje && personajeRival ? (
         <div>
-          <Personaje nombre={personaje.nombre} imagen={personaje.fotoPersonaje} saludMax={personaje.saludMax} saludActual={personaje.saludActual} energiaMax={personaje.energiaMax} energiaActual={personaje.energiaActual}></Personaje>
-          <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual} energiaMax={personajeRival.energiaMax} energiaActual={personajeRival.energiaActual}></Personaje>
+          <Personaje
+            className="personajePropio"
+            nombre={personaje.nombre}
+            imagen={personaje.fotoPersonaje}
+            saludMax={personaje.saludMax}
+            saludActual={personaje.saludActual}
+            energiaMax={personaje.energiaMax}
+            energiaActual={personaje.energiaActual}
+          />
+
+          <Personaje
+            className="personajeRival"
+            nombre={personajeRival.nombre}
+            imagen={personajeRival.fotoPersonaje}
+            saludMax={personajeRival.saludMax}
+            saludActual={personajeRival.saludActual}
+            energiaMax={personajeRival.energiaMax}
+            energiaActual={personajeRival.energiaActual}
+          />
           <div className="menu">
             <MenuPelea
               ataques={personaje.habilidades}
@@ -131,7 +142,6 @@ export default function Home() {
           <p>Cargando personaje...</p>
         </div>
       )}
-      <Button onClick={cambiarVida} text={"Cambiar vida"}></Button>
     </main>
   );
 }

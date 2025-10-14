@@ -1,13 +1,50 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* evita scroll en toda la página */
+}
+
+
+/* Contenedor principal de pelea */
+.contenedor {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* ocupa toda la pantalla */
+  overflow: hidden; /* evita scroll */
+  margin: 0;
+  padding: 0;
+}
+
+/* Personaje rival: arriba a la derecha, tamaño igual */
+.personajeRival {
+  position: absolute;
+  top: 20px; /* un poco más arriba que antes */
+  left: 65%;
+  transform: translateX(-50%) scale(0.7);
+  z-index: 10;
+}
+
+/* Personaje propio: abajo a la izquierda, más pequeño y separado */
+.personajePropio {
+  position: absolute;
+  bottom: 120px; /* un poco más arriba de la barra y subido */
+  left: 35%;
+  transform: translateX(-50%) scale(0.85);
+  z-index: 10;
+}
+
+/* Barra de habilidades */
 .menu {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  /* en vez de height fija, dejamos que se adapte */
   background: transparent;
   display: flex;
   justify-content: center;
-  align-items: flex-end; /* lo empuja hacia arriba si sobra espacio */
+  align-items: flex-end;
   z-index: 1000;
   padding: 0;
   margin: 0;

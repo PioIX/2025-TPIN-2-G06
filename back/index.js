@@ -100,6 +100,34 @@ app.post('/encontrarPersonaje', async function (req, res) {
     }
 });
 
+app.post("/obtenerPersonajeOtroJugador", async (req, res) => {
+  try {
+    const idRoom = req.body.idRoom;
+    const idUsuario = req.body.idUsuario;
+
+    const query = `
+      SELECT idPersonaje
+      FROM Sala_Usuarios
+      WHERE numero_room = ${idRoom}
+        AND idUsuario <> ${idUsuario}
+      LIMIT 1;
+    `;
+
+    const resultados = await realizarQuery(query);
+
+    if (resultados.length > 0) {
+      res.json({ idPersonaje: resultados[0].idPersonaje });
+    } else {
+      res.status(404).json({ error: "No se encontró otro jugador en la sala" });
+    }
+  } catch (error) {
+    console.error("Error al obtener el personaje del otro jugador:", error);
+    res.status(500).json({ error: "Error del servidor" });
+  }
+});
+
+
+
 app.post('/entrarPartida', async function (req, res) {
     try {
         const tipo = req.body.tipo;

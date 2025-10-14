@@ -5,21 +5,21 @@ import styles from "./Personaje.module.css";
 
 export default function Personaje(props) {
   const [saludActual, setSaludActual] = useState(props.saludActual);
-  const [energiaActual, setEnergiaActual] = useState(props.energiaActual); 
+  const [energiaActual, setEnergiaActual] = useState(props.energiaActual);
 
   useEffect(() => {
     setSaludActual(props.saludActual);
   }, [props.saludActual]);
 
   useEffect(() => {
-    setEnergiaActual(props.energiaActual); 
+    setEnergiaActual(props.energiaActual);
   }, [props.energiaActual]);
 
   const porcentajeVida = (saludActual / props.saludMax) * 100;
-  const porcentajeEnergia = (energiaActual / props.energiaMax) * 100; 
+  const porcentajeEnergia = (energiaActual / props.energiaMax) * 100;
 
   return (
-    <div className={styles.personajeCard}>
+    <div className={`${styles.personajeCard} ${props.className}`}>
       <img src={props.imagen} alt={props.nombre} className={styles.personajeImagen} />
       <h2 className={styles.personajeNombre}>{props.nombre}</h2>
 
@@ -48,8 +48,9 @@ export default function Personaje(props) {
       </div>
 
       <p className={styles.vidaTexto}>
-        {energiaActual} / {props.energiaMax} ✨ 
+        {energiaActual} / {props.energiaMax} ✨
       </p>
     </div>
+
   );
 }
