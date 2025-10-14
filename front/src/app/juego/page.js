@@ -8,52 +8,58 @@ import { useSocket } from "@/hooks/useSocket";
 
 export default function Home() {
   const searchParams = useSearchParams();
-  const [personaje, setPersonaje] = useState(null); 
+  const [personaje, setPersonaje] = useState(null);
   const [personajeRival, setPersonajeRival] = useState(null);
-  const [id, setId] = useState(null);
+  const [idPersonaje, setIdPersonaje] = useState(null);
+  const [idUsuario, setIdUsuario] = useState(null);
+  const [idRoom, setIdRoom] = useState(null);
   const { socket, isConnected } = useSocket();
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("recibirDatosInicio", (data) => {
-      console.log(data.id)
-      if(data.id != id){
-        console.log(data)
-        setPersonajeRival(data.data)
-      }
+    socket.on("infoUser", (data) => {
+      console.log(data);
     });
 
   }, [socket]);
 
   useEffect(() => {
-    const paramId = searchParams.get("id");
-    setId(paramId);
-  }, [searchParams]);
+    const paramId = searchParams.get("personaje");
+    const paramIdUsuario = searchParams.get("idUsuario");
+    const paramIdRoom = searchParams.get("idRoom");
 
-  useEffect(() => {
-    if (id) {
+    console.log("Parámetros:", { paramId, paramIdUsuario, paramIdRoom });
+
+    setIdPersonaje(paramId);
+    setIdUsuario(paramIdUsuario);
+    setIdRoom(paramIdRoom);
+
+    if (paramId && paramIdUsuario && paramIdRoom) {
       encontrarP();
     }
-  }, [id]);
+  }, [searchParams]);
+
 
   async function encontrarP() {
+    console.log("Hola");
     try {
       const response = await fetch('http://localhost:4000/encontrarPersonaje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idHabilidad: id })
+        body: JSON.stringify({ idHabilidad: idPersonaje })
       });
 
       const data = await response.json();
 
       if (data.res) {
         setPersonaje(data.res);
-        socket.emit("entrarPartida",{room: searchParams.get("room"), data, id:id, personaje: personaje.id})
+        socket.emit("joinRoom", { room: idRoom, idPersonaje: personaje, idUsuario: idUsuario });
       }
     } catch (error) {
       console.error(error);
     }
   }
+
 
   function cambiarVida() {
     const nuevaVida = personaje.saludActual - 10;
@@ -68,9 +74,9 @@ export default function Home() {
 
       {personaje && personajeRival ? (
         <div>
-          <Personaje nombre={personaje.nombre} imagen={personaje.fotoPersonaje} saludMax={personaje.saludMax} saludActual={personaje.saludActual}></Personaje>
-          <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual}></Personaje>
-          {personajeRival.nombre}
+          {personaje.energiaActual}
+          <Personaje nombre={personaje.nombre} imagen={personaje.fotoPersonaje} saludMax={personaje.saludMax} saludActual={personaje.saludActual} energiaMax={personaje.energiaMax} energiaActual={personaje.energiaActual}></Personaje>
+          <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual} energiaMax={personajeRival.energiaMax} energiaActual={personajeRival.energiaActual}></Personaje>
           <div className="menu">
             <MenuPelea
               ataques={personaje.habilidades}
@@ -81,7 +87,10 @@ export default function Home() {
 
 
       ) : (
-        <p>Cargando personaje...</p>
+        <div>
+          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+          <p>Cargando personaje...</p>
+        </div>
       )}
       <Button onClick={cambiarVida} text={"Cambiar vida"}></Button>
     </main>

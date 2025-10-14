@@ -41,7 +41,6 @@ app.post('/encontrarPersonaje', async function (req, res) {
             return res.status(400).send({ mensaje: 'No se envió ID de personaje' });
         }
 
-        // Consulta SQL usando template literal (cuidado con inyección SQL)
         const query = `
             SELECT 
                 p.idPersonaje,
@@ -63,10 +62,9 @@ app.post('/encontrarPersonaje', async function (req, res) {
             WHERE p.idPersonaje = ${id} 
         `;
 
-        // <-- Aquí NO usamos idHabilidad
         const respuesta = await realizarQuery(query);
 
-        if (respuesta.length === 0) {
+        if (respuesta.length == 0) {
             return res.status(404).send({ mensaje: 'Personaje no encontrado' });
         }
 
@@ -107,7 +105,7 @@ app.post('/entrarPartida', async function (req, res) {
         let nuevaRoomId = req.body.roomId;
         const tipo = req.body.tipo;
 
-        if (tipo === "crear") {
+        if (tipo == "crear") {
             const ultima = await realizarQuery(`SELECT MAX(numero_room) AS maxRoom FROM Salas;`);
             const ultimoNumero = ultima[0]?.maxRoom || 0;
             nuevaRoomId = ultimoNumero + 1;
@@ -123,13 +121,13 @@ app.post('/entrarPartida', async function (req, res) {
                 roomId: nuevaRoomId
             });
 
-        } else if (tipo === "unirse") {
+        } else if (tipo == "unirse") {
             const existe = await realizarQuery(`
                 SELECT * FROM Salas 
                 WHERE numero_room='${req.body.roomId}' AND activa = 1;
             `);
 
-            if (existe.length === 0) {
+            if (existe.length == 0) {
                 return res.send({
                     res: "La sala no existe o ya no está activa",
                     validar: false
@@ -180,28 +178,21 @@ io.use((socket, next) => {
 
 io.on("connection", (socket) => {
     console.log("🔌 Nuevo cliente conectado");
-
-    const session = socket.request.session; // ✅ accesible acá
+    const session = socket.request.session;
 
     socket.on("joinRoom", (data) => {
-        console.log("🚀 joinRoom data:", data);
-
-        // Si ya estaba en una room, salir primero
-        if (session.room) {
-            socket.leave(session.room);
-        }
-
-        // Guardar la nueva room en sesión
-        session.room = data.room;
-        socket.join(session.room);
-
-        io.to(session.room).emit("chat-messages", {
-            user: session.user || "Anon",
-            room: session.room,
+        console.log("🚀 ~ io.on ~ req.session.room:", req.session.room);
+        if (req.session.room != undefined && req.session.room.length > 0)
+            socket.leave(req.session.room);
+        req.session.room = data.room;
+        socket.join(req.session.room);
+        io.to(req.session.room).emit("infoUser", {
+            idUsuario: data.idUsuario,
+            room: req.session.room,
+            idPersonaje: data.idPersonaje
         });
-
-        console.log(`🧍 Usuario entró a la sala ${session.room}`);
     });
+
 
     socket.on("sendMessage", (data) => {
         const session = socket.request.session;

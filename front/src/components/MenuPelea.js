@@ -22,6 +22,10 @@ export default function MenuPelea(props) {
 
   const mitad = Math.ceil(props.ataques.length / 2);
 
+  // Dividimos los ataques en dos columnas
+  const ataquesColumna1 = props.ataques.slice(0, mitad);
+  const ataquesColumna2 = props.ataques.slice(mitad);
+
   return (
     <div className={styles.contenedor}>
       {/* MENU INICIO */}
@@ -55,8 +59,16 @@ export default function MenuPelea(props) {
           </div>
 
           <div className={styles.columnaBotones}>
-            {props.ataques.map((ataque, i) => (
+            {/* Primera columna de ataques */}
+            {ataquesColumna1.map((ataque, i) => (
               <Button key={i} text={ataque.nombre} />
+            ))}
+          </div>
+
+          <div className={styles.columnaBotones}>
+            {/* Segunda columna de ataques */}
+            {ataquesColumna2.map((ataque, i) => (
+              <Button key={i + mitad} text={ataque.nombre} />
             ))}
           </div>
 
