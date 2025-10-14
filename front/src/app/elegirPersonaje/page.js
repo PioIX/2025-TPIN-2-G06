@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
-import Personaje from "@/components/Personaje";
+import Personaje from "@/components/PersonajeLuqui";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-    const [popup, setPopup] = useState({ open: false, title: "", message: "" });
-    const [personajes, setPersonajes] = useState([]); // lista de mapas desde el back
+    const [personajes, setPersonajes] = useState([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -24,7 +23,7 @@ export default function Login() {
             const data = await response.json();
             setPersonajes(data);
         } catch (error) {
-            console.error("Error al obtener los mapas:", error);
+            console.error("Error al obtener los personajes:", error);
         }
     }
 
@@ -33,17 +32,22 @@ export default function Login() {
         <>
             <h1>Seleccione un personaje:</h1>
             {personajes.map((personaje) => (
-                <div>
+                <div key={personaje.idPersonaje}>
                     <Personaje
-                        key={personaje.nombre}
+                        nombre={personaje.nombre}
                         tipo={personaje.tipo}
                         velocidad={personaje.velocidad}
                         salud={personaje.salud}
                         energia={personaje.energia}
                         foto={personaje.foto}
                     />
+                    <Button
+                        text="Seleccionar"
+                        onClick={() => router.push('/elegirMapa')}
+                    />
                 </div>
             ))}
+
         </>
     );
 }

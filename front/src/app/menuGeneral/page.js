@@ -9,16 +9,13 @@ export default function menuGeneral() {
         <>
             <h1>Menú</h1>
             <h2>Seleccione una opcion:</h2>
-            <Button onClick={() => router.push("/ranking")}>
-                Ver Ranking
+            <Button text = "Ver Ranking" onClick={() => router.push("/ranking")}>
             </Button>
 
-            <Button onClick={() => router.push("/historial")}>
-                Ver Historial de Partidas
+            <Button text = "Ver Historial de Partidas" onClick={() => router.push("/historial")}> 
             </Button>
 
-            <Button onClick={() => router.push("/elegirPersonaje")}>
-                Jugar
+            <Button text = "Jugar" onClick={() => router.push("/elegirPersonaje")}>
             </Button>
         </>
     )

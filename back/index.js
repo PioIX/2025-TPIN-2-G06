@@ -23,7 +23,6 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-
 // ===============================
 //           RUTAS HTTP
 // ===============================
@@ -32,8 +31,6 @@ app.get('/', (req, res) => {
     res.status(200).send({ message: 'GET Home route working fine!' });
 });
 
-<<<<<<< Updated upstream
-=======
 // LOGIN
 app.post('/usuariosLogin', async (req, res) => {
     console.log(req.body);
@@ -87,7 +84,19 @@ app.get('/obtenerMapas', async function(req,res){
     res.send(respuesta);
 })
 
->>>>>>> Stashed changes
+// OBTENER PARTIDAS
+app.get('/obtenerPartidas', async function (req, res) {
+    try {
+        const respuesta = await realizarQuery(`
+            SELECT idUsuario, nombre, victorias, derrotas 
+            FROM Usuarios
+        `);
+        res.json(respuesta); // importante: devuelve JSON
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al obtener las partidas");
+    }
+});
 
 // ===============================
 //       SOCKET.IO CONFIG

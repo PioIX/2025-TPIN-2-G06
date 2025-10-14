@@ -1,0 +1,203 @@
+/* Fondo general */
+/* Evita el scroll en toda la página */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+    background: linear-gradient(135deg, #1f2937, #111827);
+}
+
+/* Asegura que el wrapper ocupe toda la altura sin scroll */
+.loginWrapper {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  font-family: 'Poppins', sans-serif;
+  color: #f9fafb;
+}
+
+/* Caja principal */
+.loginContainer {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 18px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.loginContainer h1 {
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.75rem;
+  font-size: 2rem;
+}
+
+/* Inputs */
+.inputGroup {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  margin-bottom: 0.4rem;
+}
+
+/* Afecta al componente Input */
+.inputStyled {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f9fafb;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.inputStyled:focus {
+  border-color: #8b5cf6;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+}
+
+/* Botón principal */
+.btnLogin {
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  border: none;
+  color: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.75rem;
+}
+
+.btnLogin:hover {
+  background: linear-gradient(135deg, #9333ea, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(147, 51, 234, 0.45);
+}
+
+/* Enlace de registro */
+.registroRedirect {
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+  color: #cbd5e0;
+}
+
+.registroLink {
+  color: #60a5fa;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.registroLink:hover {
+  color: #93c5fd;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Ajustar tamaño y estilo del input */
+input,
+.loginContainer input {
+  width: 100%;
+  min-width: 260px;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f9fafb;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: #6d28d9;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.25);
+}
+.rankingWrapper {
+  padding: 2rem;
+  width: 90%;
+  max-width: 800px;
+  margin: 2rem auto; /* separa del borde */
+  background: rgba(30, 41, 55, 0.9); /* fondo oscuro más visible */
+  backdrop-filter: blur(20px);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  animation: fadeIn 0.4s ease-out;
+  color: #f9fafb;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1f2937, #111827);
+}
+
+.rankingWrapper h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #f9fafb;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.rankingTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.rankingTable th,
+.rankingTable td {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.25); /* más visible */
+  color: #f9fafb; /* texto blanco */
+}
+
+.rankingTable th {
+  background: rgba(75, 85, 99, 0.9); /* gris oscuro para cabecera */
+  font-weight: 600;
+}
+
+.rankingTable tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05); /* filas pares más visibles */
+}
+
+.rankingTable tr:hover {
+  background: rgba(139, 92, 246, 0.25); /* efecto hover morado */
+  transition: background 0.3s ease;
+}
