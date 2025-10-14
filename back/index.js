@@ -102,17 +102,19 @@ app.post('/encontrarPersonaje', async function (req, res) {
 
 app.post('/entrarPartida', async function (req, res) {
     try {
-        let nuevaRoomId = req.body.roomId;
         const tipo = req.body.tipo;
 
         if (tipo == "crear") {
-            const ultima = await realizarQuery(`SELECT MAX(numero_room) AS maxRoom FROM Salas;`);
-            const ultimoNumero = ultima[0]?.maxRoom || 0;
-            nuevaRoomId = ultimoNumero + 1;
+            const result = await realizarQuery(`
+                INSERT INTO Salas (esta_activa)
+                VALUES (1);
+            `);
+
+            const nuevaRoomId = result.insertId; 
 
             await realizarQuery(`
-                INSERT INTO Salas (numero_room, idUsuario, idPersonaje, activa)
-                VALUES ('${nuevaRoomId}', '${req.body.user}', '${req.body.personaje}', 1);
+                INSERT INTO Sala_Usuarios (idUsuario, idPersonaje, numero_room)
+                VALUES ('${req.body.user}', '${req.body.personaje}', '${nuevaRoomId}');
             `);
 
             res.send({
@@ -124,7 +126,7 @@ app.post('/entrarPartida', async function (req, res) {
         } else if (tipo == "unirse") {
             const existe = await realizarQuery(`
                 SELECT * FROM Salas 
-                WHERE numero_room='${req.body.roomId}' AND activa = 1;
+                WHERE numero_room='${req.body.roomId}' AND esta_activa = 1;
             `);
 
             if (existe.length == 0) {
@@ -135,8 +137,8 @@ app.post('/entrarPartida', async function (req, res) {
             }
 
             await realizarQuery(`
-                INSERT INTO Salas (numero_room, idUsuario, idPersonaje, activa)
-                VALUES ('${req.body.roomId}', '${req.body.user}', '${req.body.personaje}', 1);
+                INSERT INTO Sala_Usuarios (idUsuario, idPersonaje, numero_room)
+                VALUES ('${req.body.user}', '${req.body.personaje}', '${req.body.roomId}');
             `);
 
             res.send({
@@ -178,8 +180,7 @@ io.use((socket, next) => {
 
 io.on("connection", (socket) => {
     console.log("🔌 Nuevo cliente conectado");
-    const session = socket.request.session;
-
+    const req = socket.request;
     socket.on("joinRoom", (data) => {
         console.log("🚀 ~ io.on ~ req.session.room:", req.session.room);
         if (req.session.room != undefined && req.session.room.length > 0)

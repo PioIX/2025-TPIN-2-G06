@@ -4,26 +4,36 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import { useSearchParams } from "next/navigation";
+
 
 export default function Prueba() {
   const { socket } = useSocket();
   const router = useRouter();
-
+  const searchParams = useSearchParams();
   const [hacer, setHacer] = useState("elegir");
   const [idRoom, setIdRoom] = useState("");
-  const [personaje, setPersonaje] = useState(1);
-  const [userId] = useState(Math.floor(Math.random() * 9000) + 1000);
+  const [idPersonaje, setIdPersonaje] = useState(null);
+  const [idUsuario, setIdUsuario] = useState(null);
+  useEffect(() => {
+    const paramId = searchParams.get("personaje");
+    const paramIdUsuario = searchParams.get("idUsuario");
+    setIdPersonaje(paramId);
+    setIdUsuario(paramIdUsuario);
 
+
+  }, []);
   async function manejarPartida(tipo) {
+
     try {
       const res = await fetch("http://localhost:4000/entrarPartida", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user: userId,
-          roomId: idRoom,
-          personaje,
-          tipo,
+          user: idUsuario,
+          roomId:idRoom,
+          personaje: idPersonaje,
+          tipo: tipo,
         }),
       });
 
@@ -32,7 +42,7 @@ export default function Prueba() {
       if (data.validar) {
         const roomFinal = data.roomId;
         setIdRoom(roomFinal);
-        router.replace(`/juego?idRoom=${roomFinal}&personaje=${personaje}`);
+        router.replace(`/juego?idRoom=${roomFinal}&personaje=${idPersonaje}`);
       } else {
         alert(data.res);
       }
@@ -44,7 +54,7 @@ export default function Prueba() {
 
   return (
     <>
-      {hacer === "elegir" && (
+      {hacer == "elegir" && (
         <div>
           <Button onClick={() => manejarPartida("crear")} text="Crear Partida" />
           <Button onClick={() => setHacer("unirse")} text="Unirse a Partida" />

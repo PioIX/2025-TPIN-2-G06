@@ -9,6 +9,7 @@ import { useSocket } from "@/hooks/useSocket";
 export default function Home() {
   const searchParams = useSearchParams();
   const [personaje, setPersonaje] = useState(null);
+  const [idPersonajeRival, setidPersonajeRival] = useState(null);
   const [personajeRival, setPersonajeRival] = useState(null);
   const [idPersonaje, setIdPersonaje] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
@@ -18,10 +19,19 @@ export default function Home() {
   useEffect(() => {
     if (!socket) return;
     socket.on("infoUser", (data) => {
-      console.log(data);
+      if (data.idUsuario != idUsuario) {
+        setidPersonajeRival(parseInt(data.idPersonaje))
+      }
     });
 
   }, [socket]);
+
+  useEffect(()=>{
+    if(idPersonajeRival){
+      encontrarPRival();
+    }
+    
+  },[idPersonajeRival])
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
@@ -34,14 +44,22 @@ export default function Home() {
     setIdUsuario(paramIdUsuario);
     setIdRoom(paramIdRoom);
 
-    if (paramId && paramIdUsuario && paramIdRoom) {
+
+  }, []);
+
+  useEffect((
+  ) => {
+    if (idPersonaje && idUsuario && idRoom) {
       encontrarP();
     }
-  }, [searchParams]);
+  }, [idPersonaje, idUsuario, idRoom])
 
 
   async function encontrarP() {
-    console.log("Hola");
+    if (!idPersonaje) {
+      console.error("ID de personaje no válido");
+      return;
+    }
     try {
       const response = await fetch('http://localhost:4000/encontrarPersonaje', {
         method: 'POST',
@@ -53,7 +71,29 @@ export default function Home() {
 
       if (data.res) {
         setPersonaje(data.res);
-        socket.emit("joinRoom", { room: idRoom, idPersonaje: personaje, idUsuario: idUsuario });
+        socket.emit("joinRoom", { room: idRoom, idPersonaje:idPersonaje, idUsuario:idUsuario});
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function encontrarPRival() {
+    if (!idPersonajeRival) {
+      console.error("ID de personaje no válido");
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:4000/encontrarPersonaje', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idHabilidad: idPersonajeRival })
+      });
+
+      const data = await response.json();
+
+      if (data.res) {
+        setPersonajeRival(data.res);
       }
     } catch (error) {
       console.error(error);
@@ -72,9 +112,8 @@ export default function Home() {
   return (
     <main className="contenedor">
 
-      {personaje && personajeRival ? (
+      {personaje && personajeRival? (
         <div>
-          {personaje.energiaActual}
           <Personaje nombre={personaje.nombre} imagen={personaje.fotoPersonaje} saludMax={personaje.saludMax} saludActual={personaje.saludActual} energiaMax={personaje.energiaMax} energiaActual={personaje.energiaActual}></Personaje>
           <Personaje nombre={personajeRival.nombre} imagen={personajeRival.fotoPersonaje} saludMax={personajeRival.saludMax} saludActual={personajeRival.saludActual} energiaMax={personajeRival.energiaMax} energiaActual={personajeRival.energiaActual}></Personaje>
           <div className="menu">
