@@ -102,85 +102,120 @@ app.post('/encontrarPersonaje', async function (req, res) {
     }
 });
 
+app.post('/entrarPartida', async function (req, res) {
+    try {
+        let nuevaRoomId = req.body.roomId;
+        const tipo = req.body.tipo;
+
+        if (tipo === "crear") {
+            const ultima = await realizarQuery(`SELECT MAX(numero_room) AS maxRoom FROM Salas;`);
+            const ultimoNumero = ultima[0]?.maxRoom || 0;
+            nuevaRoomId = ultimoNumero + 1;
+
+            await realizarQuery(`
+                INSERT INTO Salas (numero_room, idUsuario, idPersonaje, activa)
+                VALUES ('${nuevaRoomId}', '${req.body.user}', '${req.body.personaje}', 1);
+            `);
+
+            res.send({
+                res: "Sala creada exitosamente",
+                validar: true,
+                roomId: nuevaRoomId
+            });
+
+        } else if (tipo === "unirse") {
+            const existe = await realizarQuery(`
+                SELECT * FROM Salas 
+                WHERE numero_room='${req.body.roomId}' AND activa = 1;
+            `);
+
+            if (existe.length === 0) {
+                return res.send({
+                    res: "La sala no existe o ya no está activa",
+                    validar: false
+                });
+            }
+
+            await realizarQuery(`
+                INSERT INTO Salas (numero_room, idUsuario, idPersonaje, activa)
+                VALUES ('${req.body.roomId}', '${req.body.user}', '${req.body.personaje}', 1);
+            `);
+
+            res.send({
+                res: "Jugador unido a la sala",
+                validar: true,
+                roomId: req.body.roomId
+            });
+        }
+
+    } catch (error) {
+        console.error("Error al manejar partida:", error);
+        res.status(500).send({ res: "Error al procesar la partida", validar: false });
+    }
+});
+
+
 
 
 
 
 // ===============================
-//       SOCKET.IO CONFIG
+// SOCKET.IO CONFIG
 // ===============================
 const server = app.listen(port, () => {
     console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
 });
 
-const io = require('socket.io')(server, {
+const io = require("socket.io")(server, {
     cors: {
         origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true
-    }
+        methods: ["GET", "POST"],
+        credentials: true,
+    },
 });
 
-// Middleware de sesión en socket.io
 io.use((socket, next) => {
     sessionMiddleware(socket.request, {}, next);
 });
 
-
-// Eventos socket
 io.on("connection", (socket) => {
-    const req = socket.request;
     console.log("🔌 Nuevo cliente conectado");
 
-    socket.on('joinRoom', data => {
-        if (req.session.room) socket.leave(req.session.room);
-        req.session.room = data.room;
-        socket.join(req.session.room);
-        console.log(data.mensaje);
-        io.to(req.session.room).emit('chat-messages', { user: req.session.user, room: req.session.room });
-    });
+    const session = socket.request.session; // ✅ accesible acá
 
-    socket.on('pingAll', data => {
-        console.log("PING ALL: ", data);
-        io.emit('pingAll', { event: "Ping to all", message: data });
-    });
+    socket.on("joinRoom", (data) => {
+        console.log("🚀 joinRoom data:", data);
 
-    socket.on('mandarDatosInicio', data => {
-        console.log(data)
-        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, data: data.data.res, id: data.id });
-    });
-
-
-    socket.on('entrarPartida', data => {
-        const user = data.id;
-        const roomId = data.room;
-        const personaje = data.personaje
-        
-
-        req.session.room = roomId;
-        socket.join(roomId);
-
-        console.log(`Usuario ${user} entró a la sala ${roomId}. Jugadores: ${users.length}`);
-        io.to(req.session.room).emit('recibirDatosInicio', { room: req.session.room, data: data.data.res, id: data.id });
-    });
-
-
-
-    socket.on('disconnect', () => {
-        console.log("Cliente desconectado");
-
-        const roomId = req.session.room;
-        const user = req.session.user;
-
-        if (roomId && rooms[roomId]) {
-            // Vaciar la sala (eliminar todos los usuarios)
-            rooms[roomId] = [];
-            console.log(`Sala ${roomId} vaciada por desconexión de ${user}`);
-
-            // Notificar a todos en la sala que se vació
-            io.to(roomId).emit('partida-vacia', { room: roomId });
+        // Si ya estaba en una room, salir primero
+        if (session.room) {
+            socket.leave(session.room);
         }
+
+        // Guardar la nueva room en sesión
+        session.room = data.room;
+        socket.join(session.room);
+
+        io.to(session.room).emit("chat-messages", {
+            user: session.user || "Anon",
+            room: session.room,
+        });
+
+        console.log(`🧍 Usuario entró a la sala ${session.room}`);
     });
 
+    socket.on("sendMessage", (data) => {
+        const session = socket.request.session;
 
+        io.to(session.room).emit("newMessage", {
+            room: session.room,
+            validar: data.validar,
+            userId: data.userId,
+        });
+
+        console.log(`📤 Mensaje enviado a sala ${session.room}`, data);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("❌ Cliente desconectado");
+    });
 });

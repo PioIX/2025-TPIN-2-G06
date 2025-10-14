@@ -51,6 +51,11 @@
   background: linear-gradient(90deg, #ff4d4d, #ff0000);
 }
 
+.energuia {
+  background: linear-gradient(90deg, #0026ff, #00aeff);
+}
+
+
 .vidaTexto {
   margin-top: 6px;
   font-size: 0.9rem;

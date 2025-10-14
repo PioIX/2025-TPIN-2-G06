@@ -37,6 +37,19 @@ export default function Personaje(props) {
       <p className={styles.vidaTexto}>
         {saludActual} / {props.saludMax} HP
       </p>
+
+      <div className={styles.vidaContainer}>
+        <div
+          className={clsx(styles.vidaBarra, {
+            [styles.energuia]: true
+          })}
+          style={{ width: `${porcentajeEnerguia}%` }}
+        />
+      </div>
+
+      <p className={styles.vidaTexto}>
+        {porcentajeEnerguia} / {props.saludMax} HP
+      </p>
     </div>
   );
 }
