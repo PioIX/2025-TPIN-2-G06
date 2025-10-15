@@ -1,0 +1,64 @@
+.personajeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200px;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 10px auto;
+}
+
+.personajeImagen {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.personajeNombre {
+  margin-top: 10px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #003366;
+  text-align: center;
+}
+
+.vidaContainer {
+  width: 100%;
+  height: 16px;
+  background: #ddd;
+  border-radius: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.vidaBarra {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s ease-in-out, background 0.3s ease-in-out;
+}
+
+/* Colores de vida */
+.vidaAlta {
+  background: linear-gradient(90deg, #4caf50, #2ecc71);
+}
+
+.vidaMedia {
+  background: linear-gradient(90deg, #ffcc00, #ffaa00);
+}
+
+.vidaBaja {
+  background: linear-gradient(90deg, #ff4d4d, #ff0000);
+}
+
+.energuia {
+  background: linear-gradient(90deg, #0026ff, #00aeff);
+}
+
+
+.vidaTexto {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #333;
+  text-align: center;
+}
