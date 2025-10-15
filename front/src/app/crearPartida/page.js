@@ -42,7 +42,7 @@ export default function Prueba() {
       if (data.validar) {
         const roomFinal = data.roomId;
         setIdRoom(roomFinal);
-        router.replace(`/juego?idRoom=${roomFinal}&personaje=${idPersonaje}`);
+        router.replace(`/juego?idRoom=${roomFinal}&personaje=${idPersonaje}&idUsuario=${idUsuario}`);
       } else {
         alert(data.res);
       }

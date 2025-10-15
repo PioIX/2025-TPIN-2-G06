@@ -215,10 +215,9 @@ io.on("connection", (socket) => {
             socket.leave(req.session.room);
         req.session.room = data.room;
         socket.join(req.session.room);
-        io.to(req.session.room).emit("infoUser", {
-            idUsuario: data.idUsuario,
-            room: req.session.room,
-            idPersonaje: data.idPersonaje
+        console.log("Te has unido a la room", req.session.room)
+        io.to(req.session.room).emit("empieza", {
+            idUsuarioEmpieza:Math.floor(Math.random() * 2) + 1
         });
     });
 

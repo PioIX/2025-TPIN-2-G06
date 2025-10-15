@@ -7,14 +7,6 @@ export default function Personaje(props) {
   const [saludActual, setSaludActual] = useState(props.saludActual);
   const [energiaActual, setEnergiaActual] = useState(props.energiaActual);
 
-  useEffect(() => {
-    setSaludActual(props.saludActual);
-  }, [props.saludActual]);
-
-  useEffect(() => {
-    setEnergiaActual(props.energiaActual);
-  }, [props.energiaActual]);
-
   const porcentajeVida = (saludActual / props.saludMax) * 100;
   const porcentajeEnergia = (energiaActual / props.energiaMax) * 100;
 

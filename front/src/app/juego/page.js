@@ -15,12 +15,17 @@ export default function Home() {
   const [idUsuario, setIdUsuario] = useState(null);
   const [idRoom, setIdRoom] = useState(null);
   const { socket, isConnected } = useSocket();
+  const [empieza, setEmpieza] = useState(0)
 
   useEffect(() => {
     if (!socket) return;
+    if (!idRoom) return;
+    socket.emit("joinRoom", { room: idRoom });
+    socket.on("empieza", (data) => {
+      setEmpieza(data.idUsuarioEmpieza);
+    });
 
-
-  }, [socket]);
+  }, [socket, idRoom]);
 
   /**
    * ==================
@@ -105,7 +110,6 @@ export default function Home() {
 
   return (
     <main className="contenedor">
-
       {personaje && personajeRival ? (
         <div>
           <Personaje
