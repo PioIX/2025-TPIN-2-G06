@@ -74,26 +74,6 @@ html, body {
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
 }
 
-.btnLogin {
-  background: linear-gradient(135deg, #2563eb, #9333ea);
-  border: none;
-  color: #ffffff;
-  padding: 1rem;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 1.05rem;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 0.75rem;
-}
-
-.btnLogin:hover {
-  background: linear-gradient(135deg, #9333ea, #2563eb);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(147, 51, 234, 0.45);
-}
-
 .registroRedirect {
   margin-top: 1.25rem;
   font-size: 0.9rem;

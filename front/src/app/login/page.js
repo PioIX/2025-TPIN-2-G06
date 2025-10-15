@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Input from "@/components/Input";
+import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 
 
@@ -38,7 +39,6 @@ export default function Login() {
 
         setTimeout(() => {
           closePopup();
-          console.log(result.id)
           router.replace(`/menuGeneral?idUsuario=${result.id}&`);
         }, 800);
       } else {
@@ -75,9 +75,9 @@ export default function Login() {
             />
           </div>
 
-          <button type="button" className="btnLogin" onClick={ingresar}>
+          <Button type="button" onClick={ingresar}>
             Ingresar
-          </button>
+          </Button>
 
           <div className="registroRedirect">
             <p>

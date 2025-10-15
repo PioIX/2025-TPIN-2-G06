@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
+
 
 export default function Registro() {
   const [nombre, setNombre] = useState("");
@@ -88,9 +90,9 @@ export default function Registro() {
             />
           </div>
 
-          <button type="button" className="btnLogin" onClick={registroBack}>
+          <Button type="button" onClick={registroBack}>
             Registrarse
-          </button>
+          </Button>
 
           <div className="registroRedirect">
             <p>

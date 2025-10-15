@@ -24,7 +24,7 @@ export default function menuGeneral() {
             <Button text="Ver Ranking" onClick={() => router.push("/ranking")}>
             </Button>
 
-            <Button text="Ver Historial de Partidas" onClick={() => router.push(`/historial?idUsuario=${idUsuario}&`)}>
+            <Button text="Ver Historial de Partidas" onClick={() => router.push(`/historial?idUsuario=${idUsuario}`)}>
             </Button>
 
             <Button text="Jugar" onClick={() => router.push(`/elegirPersonaje?idUsuario=${idUsuario}&`)}>
