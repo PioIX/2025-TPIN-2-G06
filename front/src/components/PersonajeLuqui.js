@@ -8,7 +8,7 @@ export default function PersonajeLuqui(props) {
         <p> Velocidad = {props.velocidad}</p>
         <p> Salud = {props.salud}</p>
         <p> Energía = {props.energia}</p>
-        <img> Foto = {props.foto}</img>
+        <p> Foto = {props.foto}</p>
       </>
     );
   }

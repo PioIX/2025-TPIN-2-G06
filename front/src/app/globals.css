@@ -7,9 +7,6 @@ html, body {
   padding: 0;
 }
 
-body {
-    background: linear-gradient(135deg, #1f2937, #111827);
-}
 
 /* Asegura que el wrapper ocupe toda la altura sin scroll */
 .loginWrapper {

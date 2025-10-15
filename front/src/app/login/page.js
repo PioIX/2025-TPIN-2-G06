@@ -38,7 +38,8 @@ export default function Login() {
 
         setTimeout(() => {
           closePopup();
-          router.replace("/menuGeneral");
+          console.log(result.id)
+          router.replace(`/menuGeneral?idUsuario=${result.id}&`);
         }, 800);
       } else {
         showPopup("Error", "La contraseña o el mail es incorrecto");
