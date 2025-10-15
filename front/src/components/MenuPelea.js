@@ -1,12 +1,20 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import clsx from "clsx";
 import styles from "./MenuPelea.module.css";
 
 export default function MenuPelea(props) {
-  const [menu, setMenu] = useState("inicio");
+  const [menu, setMenu] = useState("");
   const [ataqueSeleccionado, setAtaqueSeleccionado] = useState(false);
+
+  useEffect(()=>{
+    if(props.empieza=="true"){
+      setMenu("inicio")
+    }else{
+      setMenu("Esperando")
+    }
+  },[])
 
   const mostrarMenuAtaque = () => {
     setMenu("ataque");
@@ -40,6 +48,15 @@ export default function MenuPelea(props) {
           <div className={styles.columnaBotones}>
             <Button onClick={mostrarMenuAtaque} text="Atacar" />
             <Button onClick={mostrarMenuDefensa} text="Defender" />
+          </div>
+        </div>
+      )}
+
+      {/* MENU ESPERA */}
+      {menu === "Esperando" && (
+        <div className={clsx(styles.menuEspera)}>
+          <div className={styles.columnaTexto}>
+            <h2 className={styles.titulo}>Esperando que el rival haga su ataque</h2>
           </div>
         </div>
       )}

@@ -101,11 +101,11 @@ app.post('/encontrarPersonaje', async function (req, res) {
 });
 
 app.post("/obtenerPersonajeOtroJugador", async (req, res) => {
-  try {
-    const idRoom = req.body.idRoom;
-    const idUsuario = req.body.idUsuario;
+    try {
+        const idRoom = req.body.idRoom;
+        const idUsuario = req.body.idUsuario;
 
-    const query = `
+        const query = `
       SELECT idPersonaje
       FROM Sala_Usuarios
       WHERE numero_room = ${idRoom}
@@ -113,17 +113,17 @@ app.post("/obtenerPersonajeOtroJugador", async (req, res) => {
       LIMIT 1;
     `;
 
-    const resultados = await realizarQuery(query);
+        const resultados = await realizarQuery(query);
 
-    if (resultados.length > 0) {
-      res.json({ idPersonaje: resultados[0].idPersonaje });
-    } else {
-      res.status(404).json({ error: "No se encontró otro jugador en la sala" });
+        if (resultados.length > 0) {
+            res.json({ idPersonaje: resultados[0].idPersonaje });
+        } else {
+            res.status(404).json({ error: "No se encontró otro jugador en la sala" });
+        }
+    } catch (error) {
+        console.error("Error al obtener el personaje del otro jugador:", error);
+        res.status(500).json({ error: "Error del servidor" });
     }
-  } catch (error) {
-    console.error("Error al obtener el personaje del otro jugador:", error);
-    res.status(500).json({ error: "Error del servidor" });
-  }
 });
 
 
@@ -138,7 +138,7 @@ app.post('/entrarPartida', async function (req, res) {
                 VALUES (1);
             `);
 
-            const nuevaRoomId = result.insertId; 
+            const nuevaRoomId = result.insertId;
 
             await realizarQuery(`
                 INSERT INTO Sala_Usuarios (idUsuario, idPersonaje, numero_room)
@@ -148,7 +148,8 @@ app.post('/entrarPartida', async function (req, res) {
             res.send({
                 res: "Sala creada exitosamente",
                 validar: true,
-                roomId: nuevaRoomId
+                roomId: nuevaRoomId,
+                empezar:true
             });
 
         } else if (tipo == "unirse") {
@@ -172,7 +173,8 @@ app.post('/entrarPartida', async function (req, res) {
             res.send({
                 res: "Jugador unido a la sala",
                 validar: true,
-                roomId: req.body.roomId
+                roomId: req.body.roomId,
+                empezar:false
             });
         }
 
@@ -216,9 +218,6 @@ io.on("connection", (socket) => {
         req.session.room = data.room;
         socket.join(req.session.room);
         console.log("Te has unido a la room", req.session.room)
-        io.to(req.session.room).emit("empieza", {
-            idUsuarioEmpieza:Math.floor(Math.random() * 2) + 1
-        });
     });
 
 

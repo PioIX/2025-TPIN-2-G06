@@ -21,11 +21,12 @@ export default function Home() {
     if (!socket) return;
     if (!idRoom) return;
     socket.emit("joinRoom", { room: idRoom });
-    socket.on("empieza", (data) => {
-      setEmpieza(data.idUsuarioEmpieza);
+    setEmpieza(searchParams.get("empieza"))
+    socket.emit("sendMessage", { message: "UNIDO" });
+    socket.on("newMessage", (data) => {
+      encontrarIdRival();
     });
-
-  }, [socket, idRoom]);
+  }, [socket, idRoom, idUsuario]);
 
   /**
    * ==================
@@ -52,14 +53,6 @@ export default function Home() {
     }
   }, [idPersonaje, idRoom])
 
-  useEffect((
-  ) => {
-    if (idUsuario && idRoom) {
-      encontrarIdRival();
-    }
-  }, [idUsuario, idRoom])
-
-
   /*
   ====================================
   ENCONTRAR MI PERSONAJE Y EL DEL RIVAL
@@ -83,6 +76,7 @@ export default function Home() {
   }
 
   async function encontrarIdRival() {
+    console.log("XD")
     try {
       const response = await fetch("http://localhost:4000/obtenerPersonajeOtroJugador", {
         method: "POST",
@@ -133,6 +127,7 @@ export default function Home() {
           />
           <div className="menu">
             <MenuPelea
+              empieza={empieza}
               ataques={personaje.habilidades}
               probabilidadEsquivar={personaje.velocidad}
             />
