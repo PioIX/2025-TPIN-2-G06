@@ -33,7 +33,7 @@ export default function Login() {
             <h1>Seleccione un personaje:</h1>
             {personajes.map((personaje) => (
                 <div key={personaje.idPersonaje}>
-                    <Personaje
+                    <PersonajeLuqui
                         nombre={personaje.nombre}
                         tipo={personaje.tipo}
                         velocidad={personaje.velocidad}
