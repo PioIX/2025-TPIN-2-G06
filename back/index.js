@@ -233,6 +233,18 @@ io.on("connection", (socket) => {
         console.log(`📤 Mensaje enviado a sala ${session.room}`, data);
     });
 
+    socket.on("cambiarTurno", (data) => {
+        const session = socket.request.session;
+
+        io.to(session.room).emit("validarCambioTurno", {
+            check: true,
+            idUsuario:data.idUsuario,
+            numeroTurno:data.numeroTurno
+        });
+
+        console.log(`📤 Cambio en la sala ${session.room}`, data);
+    });
+
     socket.on("disconnect", () => {
         console.log("❌ Cliente desconectado");
     });

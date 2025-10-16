@@ -15,6 +15,7 @@ export default function Personaje(props) {
       <img src={props.imagen} alt={props.nombre} className={styles.personajeImagen} />
       <h2 className={styles.personajeNombre}>{props.nombre}</h2>
 
+      {}
       <div className={styles.vidaContainer}>
         <div
           className={clsx(styles.vidaBarra, {
@@ -30,19 +31,23 @@ export default function Personaje(props) {
         {saludActual} / {props.saludMax} HP
       </p>
 
-      <div className={styles.vidaContainer}>
-        <div
-          className={clsx(styles.vidaBarra, {
-            [styles.energuia]: true
-          })}
-          style={{ width: `${porcentajeEnergia}%` }}
-        />
-      </div>
+      {}
+      {energiaActual&& (
+        <>
+          <div className={styles.vidaContainer}>
+            <div
+              className={clsx(styles.vidaBarra, {
+                [styles.energuia]: true, 
+              })}
+              style={{ width: `${porcentajeEnergia}%` }}
+            />
+          </div>
 
-      <p className={styles.vidaTexto}>
-        {energiaActual} / {props.energiaMax} ✨
-      </p>
+          <p className={styles.vidaTexto}>
+            {energiaActual} / {props.energiaMax} ✨
+          </p>
+        </>
+      )}
     </div>
-
   );
 }

@@ -9,30 +9,42 @@ import { useSocket } from "@/hooks/useSocket";
 export default function Home() {
   const searchParams = useSearchParams();
   const [personaje, setPersonaje] = useState(null);
-  const [idPersonajeRival, setidPersonajeRival] = useState(null);
+  const [idPersonajeRival, setIdPersonajeRival] = useState(null);
   const [personajeRival, setPersonajeRival] = useState(null);
   const [idPersonaje, setIdPersonaje] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
   const [idRoom, setIdRoom] = useState(null);
   const { socket, isConnected } = useSocket();
-  const [empieza, setEmpieza] = useState(0)
+  const [empieza, setEmpieza] = useState(false);
+  const [habElegida, setHabElegida] = useState();
+  const [habRival, setHabRival] = useState();
+  const [numeroTurno, setNumeroTurno] = useState(0)
 
   useEffect(() => {
     if (!socket) return;
     if (!idRoom) return;
+
     socket.emit("joinRoom", { room: idRoom });
-    setEmpieza(searchParams.get("empieza"))
+
+    const empiezaParam = searchParams.get("empieza");
+    setEmpieza(empiezaParam === "true");
+
     socket.emit("sendMessage", { message: "UNIDO" });
+
     socket.on("newMessage", (data) => {
       encontrarIdRival();
     });
-  }, [socket, idRoom, idUsuario]);
 
-  /**
-   * ==================
-   * RECIBIR PARAMETROS 
-   * ==================
-   * */
+    socket.on("validarCambioTurno", (data) => {
+      if (data.idUsuario !== idUsuario) {
+        setEmpieza(true);
+        setNumeroTurno(data.numeroTurno + 1);
+        if (data.numeroTurno == 1) {
+          console.log("EJECTURA ACCION")
+        }
+      }
+    });
+  }, [socket, idRoom, idUsuario, searchParams]);
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
@@ -42,21 +54,15 @@ export default function Home() {
     setIdPersonaje(paramId);
     setIdUsuario(paramIdUsuario);
     setIdRoom(paramIdRoom);
-  }, []);
+  }, [searchParams]);
 
-  useEffect((
-  ) => {
+  useEffect(() => {
     if (idPersonaje && idRoom) {
-      encontrarP(idPersonaje).then((res) => {//NO ENTIENDO BIEN ESTO
+      encontrarP(idPersonaje).then((res) => {
         setPersonaje(res);
       });
     }
-  }, [idPersonaje, idRoom])
-
-  /*
-  ====================================
-  ENCONTRAR MI PERSONAJE Y EL DEL RIVAL
-  ====================================*/
+  }, [idPersonaje, idRoom]);
 
   async function encontrarP(id) {
     try {
@@ -68,7 +74,7 @@ export default function Home() {
 
       const data = await response.json();
       if (data.res) {
-        return (data.res)
+        return (data.res);
       }
     } catch (error) {
       console.error(error);
@@ -76,7 +82,7 @@ export default function Home() {
   }
 
   async function encontrarIdRival() {
-    console.log("XD")
+    console.log("XD");
     try {
       const response = await fetch("http://localhost:4000/obtenerPersonajeOtroJugador", {
         method: "POST",
@@ -90,7 +96,7 @@ export default function Home() {
       const data = await response.json();
 
       if (data.idPersonaje) {
-        setidPersonajeRival(data.idPersonaje);
+        setIdPersonajeRival(data.idPersonaje);
         const rival = await encontrarP(data.idPersonaje);
         setPersonajeRival(rival);
       }
@@ -99,8 +105,16 @@ export default function Home() {
     }
   }
 
-
-
+  function ejecutarHabilidad(event) {
+    console.log(event);
+    setHabElegida(event);
+    setPersonaje(prevPersonaje => ({
+      ...prevPersonaje,
+      energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
+    }));
+    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno });
+    setEmpieza(false);
+  }
 
   return (
     <main className="contenedor">
@@ -122,19 +136,16 @@ export default function Home() {
             imagen={personajeRival.fotoPersonaje}
             saludMax={personajeRival.saludMax}
             saludActual={personajeRival.saludActual}
-            energiaMax={personajeRival.energiaMax}
-            energiaActual={personajeRival.energiaActual}
           />
           <div className="menu">
             <MenuPelea
               empieza={empieza}
               ataques={personaje.habilidades}
               probabilidadEsquivar={personaje.velocidad}
+              onClick={ejecutarHabilidad}
             />
           </div>
         </div>
-
-
       ) : (
         <div>
           <p>El id de la sala es: {searchParams.get("idRoom")}</p>
