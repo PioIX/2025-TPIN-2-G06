@@ -149,7 +149,7 @@ app.post('/entrarPartida', async function (req, res) {
                 res: "Sala creada exitosamente",
                 validar: true,
                 roomId: nuevaRoomId,
-                empezar:true
+                empezar: true
             });
 
         } else if (tipo == "unirse") {
@@ -174,7 +174,7 @@ app.post('/entrarPartida', async function (req, res) {
                 res: "Jugador unido a la sala",
                 validar: true,
                 roomId: req.body.roomId,
-                empezar:false
+                empezar: false
             });
         }
 
@@ -238,8 +238,21 @@ io.on("connection", (socket) => {
 
         io.to(session.room).emit("validarCambioTurno", {
             check: true,
-            idUsuario:data.idUsuario,
-            numeroTurno:data.numeroTurno
+            idUsuario: data.idUsuario,
+            numeroTurno: data.numeroTurno,
+            daño: data.daño,
+            nombreHabilidad: data.nombreHabilidad
+        });
+
+        console.log(`📤 Cambio en la sala ${session.room}`, data);
+    });
+
+
+    socket.on("avisar", (data) => {
+        const session = socket.request.session;
+
+        io.to(session.room).emit("avisito", {
+            idUsuario: data.data,
         });
 
         console.log(`📤 Cambio en la sala ${session.room}`, data);

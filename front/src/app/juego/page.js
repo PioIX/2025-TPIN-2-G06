@@ -19,6 +19,9 @@ export default function Home() {
   const [habElegida, setHabElegida] = useState();
   const [habRival, setHabRival] = useState();
   const [numeroTurno, setNumeroTurno] = useState(0)
+  const [mensajeError, setMensajeError] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [barraProgreso, setBarraProgreso] = useState(0); // Estado para la barra de progreso
 
   useEffect(() => {
     if (!socket) return;
@@ -39,12 +42,35 @@ export default function Home() {
       if (data.idUsuario !== idUsuario) {
         setEmpieza(true);
         setNumeroTurno(data.numeroTurno + 1);
+
+        if (data.daño && data.nombreHabilidad) {
+          setHabRival({
+            daño: data.daño,
+            nombreHabilidad: data.nombreHabilidad
+          });
+        } else {
+          console.error('Datos inválidos para habRival:', data);
+        }
+
         if (data.numeroTurno == 1) {
-          console.log("EJECTURA ACCION")
+          setNumeroTurno(0);
+          console.log(data.nombreHabilidad);
+          console.log(data.daño);
+          socket.emit("avisar", { data: idUsuario });
         }
       }
     });
-  }, [socket, idRoom, idUsuario, searchParams]);
+
+    socket.on("avisito", (data) => {
+      if (data.idUsuario !== idUsuario) {
+        if (habRival) {
+          console.log(habRival)
+        }else{
+          console.log("No encuentra habilidad rival")
+        }
+      }
+    });
+  }, [socket]);
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
@@ -108,12 +134,35 @@ export default function Home() {
   function ejecutarHabilidad(event) {
     console.log(event);
     setHabElegida(event);
-    setPersonaje(prevPersonaje => ({
-      ...prevPersonaje,
-      energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
-    }));
-    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno });
-    setEmpieza(false);
+
+    if (personaje.energiaActual >= event.ataque.consumo) {
+      setPersonaje(prevPersonaje => ({
+        ...prevPersonaje,
+        energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
+      }));
+      setMensajeError(null);
+      setEmpieza(false);
+    } else {
+      setMensajeError("No tienes suficiente energía.");
+      setMostrarModal(true);
+
+      setBarraProgreso(0);
+
+      const interval = setInterval(() => {
+        setBarraProgreso((oldProgress) => {
+          if (oldProgress >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return oldProgress + 5;
+        });
+      }, 100);
+
+      setTimeout(() => {
+        setMostrarModal(false);
+      }, 2000);
+    }
+    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
   }
 
   return (
@@ -137,6 +186,7 @@ export default function Home() {
             saludMax={personajeRival.saludMax}
             saludActual={personajeRival.saludActual}
           />
+
           <div className="menu">
             <MenuPelea
               empieza={empieza}
@@ -150,6 +200,18 @@ export default function Home() {
         <div>
           <p>El id de la sala es: {searchParams.get("idRoom")}</p>
           <p>Cargando personaje...</p>
+        </div>
+      )}
+
+      {/* Modal de Energía Insuficiente */}
+      {mensajeError && mostrarModal && (
+        <div className="modalERROR">
+          <p>{mensajeError}</p>
+
+          {/* Barra de carga */}
+          <div className="bar-container">
+            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+          </div>
         </div>
       )}
     </main>
