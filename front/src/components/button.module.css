@@ -14,6 +14,7 @@
   transition: all 0.3s ease-in-out; /* Transición suave para hover y click */
   width: 100%; /* Asegura que todos los botones ocupen el mismo espacio */
   max-width: 200px; /* Limita el tamaño máximo del botón */
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Efectos cuando se pasa el mouse (hover) */

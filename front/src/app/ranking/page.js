@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import styles from "@/app/ranking/ranking.module.css";  // Importar el CSS Module
 
 export default function Ranking() {
   const [jugadores, setJugadores] = useState([]);
@@ -33,33 +34,30 @@ export default function Ranking() {
   }
 
   return (
-<div className="rankingWrapper">
-  <h1>Ranking Top 10 Jugadores</h1>
-  <div className="tableContainer">
-    <table className="rankingTable">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Victorias</th>
-          <th>Derrotas</th>
-          <th>Total Partidas</th>
-          <th>Win Rate (%)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {jugadores.map(j => (
-          <tr key={j.idUsuario}>
-            <td>{j.nombre}</td>
-            <td>{j.victorias}</td>
-            <td>{j.derrotas}</td>
-            <td>{j.total}</td>
-            <td>{j.winRate.toFixed(2)}</td>
+    <div className={styles.rankingWrapper}>
+      <h1>Ranking Top 10 Jugadores</h1>
+      <table className={styles.rankingTable}>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Victorias</th>
+            <th>Derrotas</th>
+            <th>Total Partidas</th>
+            <th>Win Rate (%)</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
-
+        </thead>
+        <tbody>
+          {jugadores.map(j => (
+            <tr key={j.idUsuario}>
+              <td>{j.nombre}</td>
+              <td>{j.victorias}</td>
+              <td>{j.derrotas}</td>
+              <td>{j.total}</td>
+              <td>{j.winRate.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

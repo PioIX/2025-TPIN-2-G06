@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-
 
 export default function Login() {
   const [email, setMail] = useState("");
@@ -12,12 +11,20 @@ export default function Login() {
   const [popup, setPopup] = useState({ open: false, title: "", message: "" });
   const router = useRouter();
 
+
+  useEffect(() => {
+    console.log("popup: ", popup);
+
+  }, [popup])
+
+
   const showPopup = (title, message) => {
     setPopup({ open: true, title, message });
   };
 
   const closePopup = () => {
     setPopup({ ...popup, open: false });
+
   };
 
   async function ingresar() {
@@ -33,14 +40,10 @@ export default function Login() {
       const result = await response.json();
 
       if (result.res === true) {
-        showPopup("Éxito", "Login completado");
-        localStorage.setItem("email", result.correo);
-        localStorage.setItem("id", result.id);
-
-        setTimeout(() => {
-          closePopup();
-          router.replace(`/menuGeneral?idUsuario=${result.id}&`);
-        }, 800);
+        
+        console.log("result: ", result)
+        // Redirigir inmediatamente sin setTimeout
+        router.replace(`/menuGeneral?idUsuario=${result.id}`);
       } else {
         showPopup("Error", "La contraseña o el mail es incorrecto");
       }
@@ -54,7 +57,6 @@ export default function Login() {
     <div className="loginWrapper">
       <div className="loginContainer">
         <h1>Iniciar Sesión</h1>
-        <form>
           <div className="inputGroup">
             <label htmlFor="mail">Correo electrónico</label>
             <Input
@@ -75,7 +77,7 @@ export default function Login() {
             />
           </div>
 
-          <Button type="button" onClick={ingresar}>
+          <Button type="button" text="Inicar Sesión" onClick={ingresar}>
             Ingresar
           </Button>
 
@@ -90,20 +92,20 @@ export default function Login() {
               </span>
             </p>
           </div>
-        </form>
-
-        {popup.open && (
-          <div className="popupOverlay">
-            <div className="popupContent">
-              <h2>{popup.title}</h2>
-              <p>{popup.message}</p>
-              <button onClick={closePopup} className="popupCloseBtn">
-                Cerrar
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Modal Popup */}
+      {popup.open && (
+        <div className="modalOverlay">
+          <div className="modalContent">
+            <h2>{popup.title}</h2>
+            <p>{popup.message}</p>
+            <Button text="Cerrar" onClick={closePopup}>
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

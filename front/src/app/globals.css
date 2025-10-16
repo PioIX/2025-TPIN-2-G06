@@ -10,6 +10,8 @@ html, body {
   width: 100%;
   font-family: 'Poppins', sans-serif;
   color: #f9fafb;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  
 }
 
 /* ===================== */
@@ -121,6 +123,83 @@ input:focus {
   border-color: #6d28d9;
   background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.25);
+}
+
+/* Fondo semitransparente y animación */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  /*animation: fadeInOverlay 0.4s ease-out;*/
+}
+
+/* Estilo del contenido del modal */
+.modalContent {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  padding: 2rem 3rem;
+  border-radius: 15px;
+  text-align: center;
+  color: #fff;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /*animation: fadeInContent 0.4s ease-out;*/
+}
+
+.modalContent h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.modalContent p {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.popupCloseBtn {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  background: #8b5cf6;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.popupCloseBtn:hover {
+  background-color: #6d28d9;
+}
+
+/* Animaciones */
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInContent {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ===================== */
