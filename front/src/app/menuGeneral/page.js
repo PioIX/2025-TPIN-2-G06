@@ -1,35 +1,59 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
-import { useSearchParams } from "next/navigation";
+import styles from "./menuGeneral.module.css";
 
-export default function menuGeneral() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [idUsuario, setIsUsuario] = useState(null);
+export default function MenuGeneral() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [idUsuario, setIdUsuario] = useState(null);
+  const [nombre, setNombre] = useState("");
 
-    useEffect(() => {
-        obtenerIdUsuario();
-    }, [])
+  useEffect(() => {
+    const id = searchParams.get("idUsuario");
+    const nombreUsuario = searchParams.get("nombre");
+    setIdUsuario(id);
+    if (nombreUsuario) setNombre(nombreUsuario);
+  }, [searchParams]);
 
-    const obtenerIdUsuario = () => {
-        setIsUsuario( searchParams.get("idUsuario"));
-    };
-    return (
-        <>
-            <h1>Menú</h1>
-            <h2>Seleccione una opcion:</h2>
-            <Button text="Ver Ranking" onClick={() => router.push("/ranking")}>
-            </Button>
+  const handleLogout = () => {
+    router.replace("/login");
+  };
 
-            <Button text="Ver Historial de Partidas" onClick={() => router.push(`/historial?idUsuario=${idUsuario}`)}>
-            </Button>
+  return (
+    <div className={styles.menuGeneralWrapper}>
+      <div className={styles.menuGeneralLogo}>🤼</div>
+      <h1 className={styles.menuGeneralTitle}>Kombat Pio</h1>
+      <h2 className={styles.menuGeneralSubtitle}>
+        {nombre ? `¡Bienvenido, ${nombre}!` : "Seleccione una opción:"}
+      </h2>
 
-            <Button text="Jugar" onClick={() => router.push(`/elegirPersonaje?idUsuario=${idUsuario}&`)}>
-            </Button>
-        </>
-    )
+      <div className={styles.menuGeneralButtons}>
+        <button
+          className={styles.menuGeneralBtn}
+          onClick={() => router.push("/ranking")}
+        >
+          Ver Ranking
+        </button>
+        <button
+          className={styles.menuGeneralBtn}
+          onClick={() => router.push(`/historial?idUsuario=${idUsuario}`)}
+        >
+          Ver Historial de Partidas
+        </button>
+        <button
+          className={styles.menuGeneralBtn}
+          onClick={() => router.push(`/elegirPersonaje?idUsuario=${idUsuario}`)}
+        >
+          Jugar
+        </button>
+      </div>
 
+      <div className={styles.menuGeneralLogout}>
+        <Button text="Cerrar Sesión" onClick={handleLogout} />
+      </div>
+    </div>
+  );
 }

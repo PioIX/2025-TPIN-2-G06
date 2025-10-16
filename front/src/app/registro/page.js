@@ -5,7 +5,6 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
 
-
 export default function Registro() {
   const [nombre, setNombre] = useState("");
   const [mail, setMail] = useState("");
@@ -41,7 +40,6 @@ export default function Registro() {
       const data = await response.json();
 
       if (data.validar) {
-        showPopup("Éxito", "Registro completado");
         setTimeout(() => {
           closePopup();
           router.replace("/login");
@@ -62,7 +60,6 @@ export default function Registro() {
     <div className="loginWrapper">
       <div className="loginContainer">
         <h1>Registro</h1>
-        <form>
           <div className="inputGroup">
             <label htmlFor="nombre">Nombre</label>
             <Input
@@ -90,8 +87,7 @@ export default function Registro() {
             />
           </div>
 
-          <Button type="button" onClick={registroBack}>
-            Registrarse
+          <Button type="button" text="Registrarse" onClick={registroBack}>
           </Button>
 
           <div className="registroRedirect">
@@ -105,16 +101,16 @@ export default function Registro() {
               </span>
             </p>
           </div>
-        </form>
 
+        {/* Modal Popup */}
         {popup.open && (
-          <div className="popupOverlay">
-            <div className="popupContent">
+          <div className="modalOverlay">
+            <div className="modalContent">
               <h2>{popup.title}</h2>
               <p>{popup.message}</p>
-              <button onClick={closePopup} className="popupCloseBtn">
+              <Button text="Cerrar" onClick={closePopup}>
                 Cerrar
-              </button>
+              </Button>
             </div>
           </div>
         )}
