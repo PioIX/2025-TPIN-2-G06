@@ -1,0 +1,90 @@
+/* ranking.module.css */
+.rankingWrapper {
+    padding: 2rem;
+    width: 90%;
+    max-width: 1000px;
+    margin: 2rem auto;
+    background: linear-gradient(135deg, #1f2937, #111827);
+    /* Mantener fondo oscuro en el contenedor */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 18px;
+    color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.rankingWrapper h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #f9fafb;
+    text-align: center;
+}
+
+.rankingTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #111827;
+    /* Mantener el fondo oscuro de la tabla */
+}
+
+.rankingTable th,
+.rankingTable td {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    color: #f9fafb;
+}
+
+.rankingTable th {
+    background-color: #2d3748;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.rankingTable tr:nth-child(even) {
+    background-color: #1a202c;
+}
+
+.rankingTable tr:hover {
+    background-color: #8b5cf6;
+    /* Hover con un color sutil */
+    transition: background-color 0.3s ease;
+}
+
+.rankingTable td {
+    font-weight: 500;
+}
+
+.rankingTable tr {
+    transition: transform 0.2s ease;
+}
+
+.rankingTable tr:hover {
+    transform: scale(1.02);
+    /* Le damos un pequeño zoom al hacer hover */
+}
+
+.rankingTable td:last-child {
+    font-weight: 600;
+    /* Resaltamos el win rate */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

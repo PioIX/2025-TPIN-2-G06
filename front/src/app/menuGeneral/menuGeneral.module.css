@@ -1,0 +1,209 @@
+/* ============================= */
+/* ====== MENÚ GENERAL CSS ===== */
+/* ============================= */
+
+.menuGeneralWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at center, #3b82f6, #111827 70%);
+  animation: globalFadeIn 1s ease-out, backgroundShift 10s infinite alternate ease-in-out;
+}
+
+@keyframes globalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes backgroundShift {
+  0% {
+    background: radial-gradient(circle at top left, #9333ea, #0f172a 70%);
+  }
+  50% {
+    background: radial-gradient(circle at bottom right, #3b82f6, #111827 70%);
+  }
+  100% {
+    background: radial-gradient(circle at center, #22d3ee, #0f172a 70%);
+  }
+}
+
+/* ==== GALAXIA DE FONDO ==== */
+.menuGeneralWrapper::before,
+.menuGeneralWrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* estrellas fijas */
+.menuGeneralWrapper::before {
+  background: radial-gradient(white 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.05;
+  animation: moveStars 60s linear infinite;
+}
+
+/* nebulosa suave */
+.menuGeneralWrapper::after {
+  background: radial-gradient(circle at 30% 40%, rgba(147, 51, 234, 0.25), transparent 70%),
+              radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.25), transparent 70%);
+  animation: nebulaShift 20s ease-in-out infinite alternate;
+  opacity: 0.4;
+}
+
+@keyframes moveStars {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes nebulaShift {
+  0% { transform: scale(1) translate(0, 0); filter: hue-rotate(0deg); }
+  50% { transform: scale(1.05) translate(10px, -10px); filter: hue-rotate(45deg); }
+  100% { transform: scale(1) translate(0, 0); filter: hue-rotate(0deg); }
+}
+
+/* ==== LOGO ==== */
+.menuGeneralLogo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #9333ea, #3b82f6);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+  margin-bottom: 1.5rem;
+  z-index: 1;
+  animation: popIn 0.8s ease-out, float 3s ease-in-out infinite, glowPulse 2.5s infinite alternate;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+  70% { transform: scale(1.1) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glowPulse {
+  from { box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+  to { box-shadow: 0 0 40px rgba(59, 130, 246, 0.9); }
+}
+
+/* ==== TÍTULO ==== */
+.menuGeneralTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  z-index: 1;
+  background: linear-gradient(90deg, #3b82f6, #a855f7, #22d3ee);
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ==== SUBTÍTULO ==== */
+.menuGeneralSubtitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  color: #e5e7eb;
+  opacity: 0.9;
+  animation: fadeInUp 0.8s ease-out forwards;
+  z-index: 1;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==== BOTONES ==== */
+.menuGeneralButtons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.8s ease-out;
+  z-index: 1;
+}
+
+.menuGeneralBtn {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #9333ea, #3b82f6);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.menuGeneralBtn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.3), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.menuGeneralBtn:hover::after {
+  opacity: 1;
+}
+
+.menuGeneralBtn:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.7);
+  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+}
+
+/* ==== LOGOUT ==== */
+.menuGeneralLogout {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  opacity: 0.85;
+  animation: fadeIn 1s ease-out;
+  z-index: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}

@@ -23,7 +23,6 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-
 // ===============================
 //           RUTAS HTTP
 // ===============================
@@ -32,6 +31,73 @@ app.get('/', (req, res) => {
     res.status(200).send({ message: 'GET Home route working fine!' });
 });
 
+
+// LOGIN
+app.post('/usuariosLogin', async (req, res) => {
+    console.log(req.body);
+    try {
+        let respuesta = await realizarQuery(`
+            SELECT * FROM Usuarios
+            WHERE mail='${req.body.mail}' 
+            AND contraseña='${req.body.contraseña}'
+        `);
+        if (respuesta.length > 0) {
+            req.session.user = {
+                id: respuesta[0].idUsuario,
+                mail: respuesta[0].mail
+            };
+            res.send({ res: true, correo: respuesta[0].mail, id: respuesta[0].idUsuario });
+        } else {
+            res.send({ res: "Usuario no encontrado" });
+        }
+    } catch (error) {
+        console.error("Error en /usuariosLogin:", error);
+        res.status(500).send({ res: "Error en el servidor" });
+    }
+});
+
+// REGISTRO
+app.post('/usuariosRegistro', async (req, res) => {
+    console.log(req.body);
+    let respuesta = await realizarQuery(`SELECT * FROM Usuarios WHERE mail='${req.body.mail}'`);
+    if (respuesta.length === 0) {
+        await realizarQuery(`
+            INSERT INTO Usuarios (mail, contraseña, nombre) VALUES
+            ("${req.body.mail}", "${req.body.contraseña}", "${req.body.nombre}");
+        `);
+        res.send({ res: "Usuario agregado", validar: true });
+    } else {
+        res.send({ res: "Usuario con este mail ya existe", validar: false });
+    }
+});
+
+// OBTENER PERSONAJES
+app.get('/obtenerPersonajes', async function(req,res){
+    let respuesta;
+    respuesta = await realizarQuery("SELECT * FROM Personajes")
+    res.send(respuesta);
+})
+
+// OBTENER MAPAS
+app.get('/obtenerMapas', async function(req,res){
+    let respuesta;
+    respuesta = await realizarQuery("SELECT * FROM Mapas")
+    res.send(respuesta);
+})
+
+// OBTENER PARTIDAS
+app.get('/obtenerPartidas', async function (req, res) {
+    try {
+        const respuesta = await realizarQuery(`
+            SELECT idUsuario, nombre, victorias, derrotas 
+            FROM Usuarios
+        `);
+        res.json(respuesta); // importante: devuelve JSON
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al obtener las partidas");
+    }
+});
 app.post('/encontrarPersonaje', async function (req, res) {
     try {
         const id = req.body.idHabilidad; // <-- extraemos el ID del body
