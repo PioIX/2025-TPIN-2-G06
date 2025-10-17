@@ -4,6 +4,7 @@ import styles from "./elegirPersonaje.module.css";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import PersonajeLuqui from "@/components/PersonajeLuqui";
+import CardPersonaje from "@/components/CardPersonaje";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
@@ -14,8 +15,7 @@ export default function ElegirPersonaje() {
   const [mostrarModal, setMostrarModal] = useState(false);
   const router = useRouter();
   const [idUsuario, setIsUsuario] = useState(null);
-  const [idPersonaje, setIdPersonaje] = useState(null)
-
+  const [idPersonaje, setIdPersonaje] = useState(null);
 
   useEffect(() => {
     obtenerPersonajes();
@@ -39,19 +39,16 @@ export default function ElegirPersonaje() {
     }
   }
 
-  const elegir = (e) => {
-    const id = parseInt(e.target.value);
-    setIdPersonaje(id);
-    const personaje = personajes.find((p) => p.idPersonaje === id);
+  const elegir = (personaje) => {
     setPersonajeSeleccionado(personaje);
+    setIdPersonaje(personaje.idPersonaje);
     setMostrarModal(true);
   };
-
 
   const cancelar = () => {
     setMostrarModal(false);
     setPersonajeSeleccionado(null);
-    setIdPersonaje(null)
+    setIdPersonaje(null);
   };
 
   const handleElegir = () => {
@@ -62,16 +59,16 @@ export default function ElegirPersonaje() {
     <div className={styles.elegirWrapper}>
       <h1 className={styles.elegirTitle}>Seleccioná tu personaje</h1>
 
-      <select onChange={elegir} defaultValue="" className={styles.elegirSelect}>
-        <option value="" disabled>
-          -- Elija un personaje --
-        </option>
+      <div className={styles.gridPersonajes}>
         {personajes.map((personaje) => (
-          <option key={personaje.idPersonaje} value={personaje.idPersonaje}>
-            {personaje.nombre}
-          </option>
+          <CardPersonaje
+            key={personaje.idPersonaje}
+            nombre={personaje.nombre}
+            foto={personaje.foto}
+            onClick={() => elegir(personaje)}
+          />
         ))}
-      </select>
+      </div>
 
       {mostrarModal && personajeSeleccionado && (
         <div className={styles.modalOverlay}>
@@ -93,5 +90,4 @@ export default function ElegirPersonaje() {
       )}
     </div>
   );
-
 }
