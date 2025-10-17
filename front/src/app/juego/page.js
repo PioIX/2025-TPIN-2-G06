@@ -9,24 +9,68 @@ import { useSocket } from "@/hooks/useSocket";
 export default function Home() {
   const searchParams = useSearchParams();
   const [personaje, setPersonaje] = useState(null);
-  const [idPersonajeRival, setidPersonajeRival] = useState(null);
+  const [idPersonajeRival, setIdPersonajeRival] = useState(null);
   const [personajeRival, setPersonajeRival] = useState(null);
   const [idPersonaje, setIdPersonaje] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
   const [idRoom, setIdRoom] = useState(null);
   const { socket, isConnected } = useSocket();
+  const [empieza, setEmpieza] = useState(false);
+  const [habElegida, setHabElegida] = useState();
+  const [habRival, setHabRival] = useState();
+  const [numeroTurno, setNumeroTurno] = useState(0)
+  const [mensajeError, setMensajeError] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [barraProgreso, setBarraProgreso] = useState(0); // Estado para la barra de progreso
 
   useEffect(() => {
     if (!socket) return;
+    if (!idRoom) return;
 
+    socket.emit("joinRoom", { room: idRoom });
 
+    const empiezaParam = searchParams.get("empieza");
+    setEmpieza(empiezaParam === "true");
+
+    socket.emit("sendMessage", { message: "UNIDO" });
+
+    socket.on("newMessage", (data) => {
+      encontrarIdRival();
+    });
+
+    socket.on("validarCambioTurno", (data) => {
+      if (data.idUsuario !== idUsuario) {
+        setEmpieza(true);
+        setNumeroTurno(data.numeroTurno + 1);
+
+        if (data.daño && data.nombreHabilidad) {
+          setHabRival({
+            daño: data.daño,
+            nombreHabilidad: data.nombreHabilidad
+          });
+        } else {
+          console.error('Datos inválidos para habRival:', data);
+        }
+
+        if (data.numeroTurno == 1) {
+          setNumeroTurno(0);
+          console.log(data.nombreHabilidad);
+          console.log(data.daño);
+          socket.emit("avisar", { data: idUsuario });
+        }
+      }
+    });
+
+    socket.on("avisito", (data) => {
+      if (data.idUsuario !== idUsuario) {
+        if (habRival) {
+          console.log(habRival)
+        }else{
+          console.log("No encuentra habilidad rival")
+        }
+      }
+    });
   }, [socket]);
-
-  /**
-   * ==================
-   * RECIBIR PARAMETROS 
-   * ==================
-   * */
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
@@ -36,29 +80,15 @@ export default function Home() {
     setIdPersonaje(paramId);
     setIdUsuario(paramIdUsuario);
     setIdRoom(paramIdRoom);
-  }, []);
+  }, [searchParams]);
 
-  useEffect((
-  ) => {
+  useEffect(() => {
     if (idPersonaje && idRoom) {
-      encontrarP(idPersonaje).then((res) => {//NO ENTIENDO BIEN ESTO
+      encontrarP(idPersonaje).then((res) => {
         setPersonaje(res);
       });
     }
-  }, [idPersonaje, idRoom])
-
-  useEffect((
-  ) => {
-    if (idUsuario && idRoom) {
-      encontrarIdRival();
-    }
-  }, [idUsuario, idRoom])
-
-
-  /*
-  ====================================
-  ENCONTRAR MI PERSONAJE Y EL DEL RIVAL
-  ====================================*/
+  }, [idPersonaje, idRoom]);
 
   async function encontrarP(id) {
     try {
@@ -70,7 +100,7 @@ export default function Home() {
 
       const data = await response.json();
       if (data.res) {
-        return (data.res)
+        return (data.res);
       }
     } catch (error) {
       console.error(error);
@@ -78,6 +108,7 @@ export default function Home() {
   }
 
   async function encontrarIdRival() {
+    console.log("XD");
     try {
       const response = await fetch("http://localhost:4000/obtenerPersonajeOtroJugador", {
         method: "POST",
@@ -91,7 +122,7 @@ export default function Home() {
       const data = await response.json();
 
       if (data.idPersonaje) {
-        setidPersonajeRival(data.idPersonaje);
+        setIdPersonajeRival(data.idPersonaje);
         const rival = await encontrarP(data.idPersonaje);
         setPersonajeRival(rival);
       }
@@ -100,12 +131,42 @@ export default function Home() {
     }
   }
 
+  function ejecutarHabilidad(event) {
+    console.log(event);
+    setHabElegida(event);
 
+    if (personaje.energiaActual >= event.ataque.consumo) {
+      setPersonaje(prevPersonaje => ({
+        ...prevPersonaje,
+        energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
+      }));
+      setMensajeError(null);
+      setEmpieza(false);
+    } else {
+      setMensajeError("No tienes suficiente energía.");
+      setMostrarModal(true);
 
+      setBarraProgreso(0);
+
+      const interval = setInterval(() => {
+        setBarraProgreso((oldProgress) => {
+          if (oldProgress >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return oldProgress + 5;
+        });
+      }, 100);
+
+      setTimeout(() => {
+        setMostrarModal(false);
+      }, 2000);
+    }
+    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
+  }
 
   return (
     <main className="contenedor">
-
       {personaje && personajeRival ? (
         <div>
           <Personaje
@@ -124,22 +185,33 @@ export default function Home() {
             imagen={personajeRival.fotoPersonaje}
             saludMax={personajeRival.saludMax}
             saludActual={personajeRival.saludActual}
-            energiaMax={personajeRival.energiaMax}
-            energiaActual={personajeRival.energiaActual}
           />
+
           <div className="menu">
             <MenuPelea
+              empieza={empieza}
               ataques={personaje.habilidades}
               probabilidadEsquivar={personaje.velocidad}
+              onClick={ejecutarHabilidad}
             />
           </div>
         </div>
-
-
       ) : (
         <div>
           <p>El id de la sala es: {searchParams.get("idRoom")}</p>
           <p>Cargando personaje...</p>
+        </div>
+      )}
+
+      {/* Modal de Energía Insuficiente */}
+      {mensajeError && mostrarModal && (
+        <div className="modalERROR">
+          <p>{mensajeError}</p>
+
+          {/* Barra de carga */}
+          <div className="bar-container">
+            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+          </div>
         </div>
       )}
     </main>

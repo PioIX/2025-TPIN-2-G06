@@ -25,6 +25,25 @@
   flex-wrap: nowrap;
 }
 
+/* MENU INICIO */
+.menuEspera {
+  display: flex;
+  justify-content: center; /* Centrado horizontal */
+  align-items: center;     /* Centrado vertical */
+  text-align: center;
+  background: linear-gradient(135deg, #660000, #c50505);
+  border-radius: 12px;
+  padding: 5px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 2000px;
+  min-height: 150px;
+  color: white;
+  transition: background 0.6s ease-in-out;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
 /* MENU ATAQUE */
 /* MENU ATAQUE */
 .menuAtaque {
