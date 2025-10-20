@@ -21,8 +21,6 @@ export default function MenuPelea(props) {
     setAtaqueSeleccionado(true);
   };
 
-  const mostrarMenuDefensa = () => alert("Defender activado");
-
   const volverAlInicio = () => {
     setMenu("inicio");
     setAtaqueSeleccionado(false);
@@ -47,7 +45,8 @@ export default function MenuPelea(props) {
           </div>
           <div className={styles.columnaBotones}>
             <Button onClick={mostrarMenuAtaque} text="Atacar" />
-            <Button onClick={mostrarMenuDefensa} text="Defender" />
+            <Button onClick={() => props.onClick({ defensa: true })} text="Defender" />
+
           </div>
         </div>
       )}

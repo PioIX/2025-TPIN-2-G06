@@ -174,8 +174,8 @@ export default function Home() {
   }
 
   function ejecutarHabilidad(event) {
-    console.log(event);
-    setHabElegida(event);
+    console.log(event.ataque.daño);
+    setHabElegida(event.ataque);
 
     if (personaje.energiaActual >= event.ataque.consumo) {
       setPersonaje(prevPersonaje => ({
@@ -208,17 +208,23 @@ export default function Home() {
   }
 
   function restarVida(daño) {
+    let dañoRival = 0
     if(personaje.tipo == personajeRival.tipo){
       daño = daño * 0.5
+      dañoRival = habElegida.daño * 0.5
     }else{
       daño = daño * 0.75
+      dañoRival = habElegida.daño * 0.75
     }
-    console.log(personaje)
-    console.log(personajeRival)
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
       saludActual: prevPersonaje.saludActual - daño,
     }));
+    setPersonajeRival(prevPersonajeRival => ({
+      ...prevPersonajeRival,
+      saludActual: prevPersonajeRival.saludActual - dañoRival,
+    }))
+    
   }
 
   return (
