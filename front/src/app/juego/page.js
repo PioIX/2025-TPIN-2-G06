@@ -22,13 +22,16 @@ export default function Home() {
   const [mensajeError, setMensajeError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [barraProgreso, setBarraProgreso] = useState(0); // Estado para la barra de progreso
+  const [avisitoFlag, setAvisitoFlag] = useState(false);
+  const [personajesFlag, setPersonajesFlag] = useState(false);
+  const [dataRival, setDataRival] = useState({})
 
   useEffect(() => {
     if (!socket) return;
     if (!idRoom) return;
 
     socket.emit("joinRoom", { room: idRoom });
-
+    let habRivalTemp = {}
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
 
@@ -44,18 +47,19 @@ export default function Home() {
         setNumeroTurno(data.numeroTurno + 1);
 
         if (data.daño && data.nombreHabilidad) {
-          setHabRival({
+          habRivalTemp = {
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad
-          });
+          }
+          setHabRival(habRivalTemp);
         } else {
           console.error('Datos inválidos para habRival:', data);
         }
 
         if (data.numeroTurno == 1) {
           setNumeroTurno(0);
-          console.log(data.nombreHabilidad);
-          console.log(data.daño);
+          setDataRival(data)
+          setPersonajesFlag(true)
           socket.emit("avisar", { data: idUsuario });
         }
       }
@@ -63,14 +67,44 @@ export default function Home() {
 
     socket.on("avisito", (data) => {
       if (data.idUsuario !== idUsuario) {
-        if (habRival) {
-          console.log(habRival)
-        }else{
-          console.log("No encuentra habilidad rival")
-        }
+        setAvisitoFlag(true)
+      }
+    });
+
+    socket.on("ganadorAviso", (data) => {
+      console.log(idUsuario)
+      console.log(data.idUsuario)
+      if (data.idUsuario !== idUsuario) {
+        console.log("Ganaste")
+      }else{
+        console.log("Perdiste")
       }
     });
   }, [socket]);
+
+  useEffect(() => {
+    console.log(habRival)
+    if (avisitoFlag) {
+      if (habRival != undefined) {
+        restarVida(habRival.daño)
+      } else {
+        console.log("No encuentra habilidad rival")
+      }
+      setAvisitoFlag(false)
+    }
+  }, [avisitoFlag]);
+
+  useEffect(() => {
+    
+    if (personajesFlag) {
+      if (personaje != undefined && personajeRival !=undefined) {
+        restarVida(dataRival.daño)
+      } else {
+        console.log("No encuentra habilidad rival")
+      }
+      setPersonajesFlag(false)
+    }
+  }, [personajesFlag]);
 
   useEffect(() => {
     const paramId = searchParams.get("personaje");
@@ -81,6 +115,14 @@ export default function Home() {
     setIdUsuario(paramIdUsuario);
     setIdRoom(paramIdRoom);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (personaje) {
+      if (personaje.saludActual <= 0) {
+        socket.emit("ganador", { idUsuario: idUsuario })
+      }
+    }
+  }, [personaje]);
 
   useEffect(() => {
     if (idPersonaje && idRoom) {
@@ -165,6 +207,20 @@ export default function Home() {
     socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
   }
 
+  function restarVida(daño) {
+    if(personaje.tipo == personajeRival.tipo){
+      daño = daño * 0.5
+    }else{
+      daño = daño * 0.75
+    }
+    console.log(personaje)
+    console.log(personajeRival)
+    setPersonaje(prevPersonaje => ({
+      ...prevPersonaje,
+      saludActual: prevPersonaje.saludActual - daño,
+    }));
+  }
+
   return (
     <main className="contenedor">
       {personaje && personajeRival ? (
@@ -214,6 +270,7 @@ export default function Home() {
           </div>
         </div>
       )}
+
     </main>
   );
 }
