@@ -2,169 +2,64 @@
 /* === ELEGIR PERSONAJE CSS ==== */
 /* ============================= */
 
-.elegirWrapper {
+.wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 100vh; /* 🔹 asegura altura mínima */
-  height: auto;      /* 🔹 deja crecer más allá del viewport */
-  width: 100%;
-  padding-top: 5rem;
-  padding-bottom: 3rem; /* 🔹 deja espacio abajo */
+  min-height: 100vh;
+  padding: 5rem 2rem 3rem;
+  color: white;
   text-align: center;
-  color: #fff;
-  overflow-y: visible;  /* 🔹 deja que el contenido crezca */
   position: relative;
+  overflow: hidden;
   background: radial-gradient(circle at center, #1e3a8a, #0f172a 70%);
-  animation: fadeInPage 1s ease-out, backgroundShift 12s infinite alternate ease-in-out;
+  animation: fadeInElegir 1s ease-out, elegirBackgroundShift 12s infinite alternate ease-in-out;
 }
 
 
-
-@keyframes fadeInPage {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes backgroundShift {
-  0% { background: radial-gradient(circle at 20% 30%, #3b82f6, #0f172a 70%); }
-  50% { background: radial-gradient(circle at 80% 70%, #a855f7, #111827 70%); }
-  100% { background: radial-gradient(circle at center, #22d3ee, #0f172a 70%); }
-}
-
-/* ==== ESTRELLAS Y NEBULOSA ==== */
-.elegirWrapper::before,
-.elegirWrapper::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.elegirWrapper::before {
-  background: radial-gradient(white 1px, transparent 1px);
-  background-size: 3px 3px;
-  opacity: 0.04;
-  animation: moveStars 80s linear infinite;
-}
-
-.elegirWrapper::after {
-  background: radial-gradient(circle at 40% 40%, rgba(147, 51, 234, 0.25), transparent 70%),
-              radial-gradient(circle at 60% 60%, rgba(34, 211, 238, 0.25), transparent 70%);
-  animation: nebulaShift 25s ease-in-out infinite alternate;
-  opacity: 0.4;
-}
-
-@keyframes moveStars {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
-}
-
-@keyframes nebulaShift {
-  0% { transform: scale(1); filter: hue-rotate(0deg); }
-  50% { transform: scale(1.05); filter: hue-rotate(45deg); }
-  100% { transform: scale(1); filter: hue-rotate(0deg); }
-}
-
-/* ==== TÍTULO ==== */
-.elegirTitle {
-  font-size: 3rem;
-  font-weight: 800;
+.titulo {
+  font-size: 2.5rem;
+  font-weight: bold;
   margin-bottom: 1.5rem;
-  background: linear-gradient(90deg, #3b82f6, #a855f7, #22d3ee);
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s infinite linear;
-  z-index: 1;
-
-  /* ✨ Contorno + sombra para legibilidad */
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.4),
-    0 0 20px rgba(59, 130, 246, 0.6),
-    0 0 30px rgba(147, 51, 234, 0.6),
-    0 0 5px rgba(0, 0, 0, 0.9);
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
 }
 
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.gridPersonajes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ==== SELECT ==== */
-.elegirSelect {
-  padding: 0.9rem 1.3rem;
-  font-size: 1.1rem;
-  border-radius: 14px;
-  background: rgba(17, 25, 40, 0.6);
-  color: #fff;
-  border: 2px solid rgba(59, 130, 246, 0.6);
-  outline: none;
-  margin-top: 1.5rem;
-  transition: all 0.3s ease;
-  z-index: 1;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-  font-weight: 600;
-  text-align: center;
-}
-
-.elegirSelect:hover {
-  background: rgba(30, 58, 138, 0.8);
-  border-color: #22d3ee;
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.8);
-  transform: scale(1.05);
-}
-
-.elegirSelect option {
-  color: #000;
-  background-color: #e0e7ff;
-  font-weight: 500;
-}
-
-/* ==== MODAL ==== */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(10, 10, 20, 0.8);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.5s ease-out;
+}
+
+.modalBox * {
+  color: #ffffff;
 }
 
 .modalBox {
-  background: linear-gradient(135deg, rgba(30, 64, 175, 0.95), rgba(59, 130, 246, 0.9));
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.9), rgba(59, 130, 246, 0.8));
   padding: 2rem;
-  border-radius: 20px;
-  width: 340px;
+  border-radius: 10px;
+  width: 350px;
   text-align: center;
   color: #fff;
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
-  animation: popUp 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes popUp {
-  0% { transform: scale(0.8); opacity: 0; }
-  80% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); }
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
 }
 
 .modalButtons {
@@ -176,44 +71,37 @@
 
 .modalButtons button {
   border-radius: 10px;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  border: none;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .modalButtons button:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-.colorLetras p {
-  color: black;
+@keyframes fadeInElegir {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.elegirTitle {
-  font-size: 2.8rem;
-  font-weight: 800;
-  margin-bottom: 2rem;
-  text-align: center;
-  color: white;
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.8),
-               0 0 12px rgba(59, 130, 246, 0.6);
-  letter-spacing: 1px;
-  -webkit-text-stroke: 1px rgba(59, 130, 246, 0.6);
+@keyframes elegirBackgroundShift {
+  0% {
+    background: radial-gradient(circle at top left, #3b82f6, #1e3a8a 70%);
+  }
+  50% {
+    background: radial-gradient(circle at bottom right, #9333ea, #1e3a8a 70%);
+  }
+  100% {
+    background: radial-gradient(circle at center, #22d3ee, #1e3a8a 70%);
+  }
 }
-
-.gridPersonajes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 2rem;
-  justify-items: center;
-  padding: 0 2rem;
-  max-width: 1000px;
-  margin: 0 auto;
-  z-index: 1;
-}
-
-.elegirWrapper :global(body),
-.elegirWrapper :global(html) {
-  overflow-y: auto !important;
-  height: auto !important;
-}
-
