@@ -1,0 +1,132 @@
+/* === CONTENEDOR PRINCIPAL === */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  background: radial-gradient(circle at center, #3b82f6, #111827 70%);
+  animation: fadeInCrear 1s ease-out, backgroundShiftCrear 12s infinite alternate ease-in-out;
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeInCrear {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes backgroundShiftCrear {
+  0% {
+    background: radial-gradient(circle at top left, #9333ea, #0f172a 70%);
+  }
+  50% {
+    background: radial-gradient(circle at bottom right, #3b82f6, #111827 70%);
+  }
+  100% {
+    background: radial-gradient(circle at center, #22d3ee, #0f172a 70%);
+  }
+}
+
+/* === ESTRELLAS Y NEBULOSA === */
+.wrapper::before,
+.wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrapper::before {
+  background: radial-gradient(white 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.05;
+  animation: moveStars 60s linear infinite;
+}
+
+.wrapper::after {
+  background: radial-gradient(circle at 30% 40%, rgba(147, 51, 234, 0.25), transparent 70%),
+              radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.25), transparent 70%);
+  animation: nebulaShift 20s ease-in-out infinite alternate;
+  opacity: 0.4;
+}
+
+@keyframes moveStars {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes nebulaShift {
+  0% { transform: scale(1); filter: hue-rotate(0deg); }
+  50% { transform: scale(1.05); filter: hue-rotate(45deg); }
+  100% { transform: scale(1); filter: hue-rotate(0deg); }
+}
+
+/* === BOTONES === */
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 1;
+}
+
+.buttonGroup button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #9333ea, #3b82f6);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.buttonGroup button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.7);
+  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+}
+
+/* === INPUT === */
+.inputStyled {
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  
+}
+
+.inputStyled::placeholder {
+  color: #cbd5e0;
+}
+
+.inputStyled:focus {
+  border-color: #60a5fa;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}

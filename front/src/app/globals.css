@@ -4,7 +4,6 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -333,4 +332,14 @@ input:focus {
   background-color: #00ffaa; /* Verde */
   border-radius: 5px;
   transition: width 0.1s linear; /* Animación más rápida con un intervalo menor */
+}
+
+/* Animación de glow */
+@keyframes glowPulse {
+  from {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  }
+  to {
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+  }
 }
