@@ -45,7 +45,7 @@ export default function MenuPelea(props) {
           </div>
           <div className={styles.columnaBotones}>
             <Button onClick={mostrarMenuAtaque} text="Atacar" />
-            <Button onClick={() => props.onClick({ defensa: true })} text="Defender" />
+            <Button onClick={() => props.onClick({ataque:"defensa"})} text="Defender" />
 
           </div>
         </div>

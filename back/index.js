@@ -72,14 +72,14 @@ app.post('/usuariosRegistro', async (req, res) => {
 });
 
 // OBTENER PERSONAJES
-app.get('/obtenerPersonajes', async function(req,res){
+app.get('/obtenerPersonajes', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Personajes")
     res.send(respuesta);
 })
 
 // OBTENER MAPAS
-app.get('/obtenerMapas', async function(req,res){
+app.get('/obtenerMapas', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Mapas")
     res.send(respuesta);
@@ -302,37 +302,50 @@ io.on("connection", (socket) => {
     socket.on("cambiarTurno", (data) => {
         const session = socket.request.session;
 
+        if (data.condicion != "defensa") {
+            io.to(session.room).emit("validarCambioTurno", {
+                check: true,
+                idUsuario: data.idUsuario,
+                numeroTurno: data.numeroTurno,
+                daño: data.daño,
+                nombreHabilidad: data.nombreHabilidad,
+                hace: "ataca"
+            });
+        }else if (data.condicion == "defensa") {
         io.to(session.room).emit("validarCambioTurno", {
             check: true,
             idUsuario: data.idUsuario,
             numeroTurno: data.numeroTurno,
-            daño: data.daño,
-            nombreHabilidad: data.nombreHabilidad
+            hace: "defensa"
         });
+        console.log("📩 validarCambioTurno recibido:", data);
+    }
 
-        console.log(`📤 Cambio en la sala ${session.room}`, data);
+
+    console.log(`📤 Cambio en la sala ${session.room}`, data);
+});
+
+
+socket.on("avisar", (data) => {
+    const session = socket.request.session;
+
+    io.to(session.room).emit("avisito", {
+        idUsuario: data.idUsuario,
+        hace: data.hace
     });
 
+    console.log(`📤 Cambio en la sala ${session.room}`, data);
+});
 
-    socket.on("avisar", (data) => {
-        const session = socket.request.session;
-
-        io.to(session.room).emit("avisito", {
-            idUsuario: data.data,
-        });
-
-        console.log(`📤 Cambio en la sala ${session.room}`, data);
+socket.on("ganador", (data) => {
+    const session = socket.request.session;
+    console.log(data.idUsuario)
+    io.to(session.room).emit("ganadorAviso", {
+        idUsuario: data.idUsuario,
     });
+});
 
-    socket.on("ganador", (data) => {
-        const session = socket.request.session;
-        console.log(data.idUsuario)
-        io.to(session.room).emit("ganadorAviso", {
-            idUsuario: data.idUsuario,
-        });
-    });
-
-    socket.on("disconnect", () => {
-        console.log("❌ Cliente desconectado");
-    });
+socket.on("disconnect", () => {
+    console.log("❌ Cliente desconectado");
+});
 });

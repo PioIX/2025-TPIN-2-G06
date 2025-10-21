@@ -25,6 +25,9 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({})
+  const [hacerRival, setHacerRival] = useState("")
+  const [hacer, setHacer] = useState("")
+
 
   useEffect(() => {
     if (!socket) return;
@@ -43,24 +46,37 @@ export default function Home() {
 
     socket.on("validarCambioTurno", (data) => {
       if (data.idUsuario !== idUsuario) {
-        setEmpieza(true);
-        setNumeroTurno(data.numeroTurno + 1);
+        if (data.hace == "ataca") {
+          console.log(data)
+          setEmpieza(true);
+          setNumeroTurno(data.numeroTurno + 1);
 
-        if (data.daño && data.nombreHabilidad) {
-          habRivalTemp = {
-            daño: data.daño,
-            nombreHabilidad: data.nombreHabilidad
+          if (data.daño && data.nombreHabilidad) {
+            habRivalTemp = {
+              daño: data.daño,
+              nombreHabilidad: data.nombreHabilidad
+            }
+            setHabRival(habRivalTemp);
+          } else {
+            console.error('Datos inválidos para habRival:', data);
           }
-          setHabRival(habRivalTemp);
-        } else {
-          console.error('Datos inválidos para habRival:', data);
-        }
 
-        if (data.numeroTurno == 1) {
-          setNumeroTurno(0);
-          setDataRival(data)
-          setPersonajesFlag(true)
-          socket.emit("avisar", { data: idUsuario });
+          if (data.numeroTurno == 1) {
+            setNumeroTurno(0);
+            setDataRival(data)
+            setPersonajesFlag(true)
+            socket.emit("avisar", { idUsuario: idUsuario, hace: "ataca" });
+          }
+        } else if (data.hace == "defensa") {
+          setEmpieza(true);
+          setNumeroTurno(data.numeroTurno + 1);
+          if (data.numeroTurno == 1) {
+            setNumeroTurno(0);
+            setDataRival(data)
+            setHacer("defender")
+            setPersonajesFlag(true)
+            socket.emit("avisar", { data: idUsuario, hace: "ataca" });
+          }
         }
       }
     });
@@ -68,6 +84,7 @@ export default function Home() {
     socket.on("avisito", (data) => {
       if (data.idUsuario !== idUsuario) {
         setAvisitoFlag(true)
+        setHacerRival(data.hace)
       }
     });
 
@@ -76,17 +93,25 @@ export default function Home() {
       console.log(data.idUsuario)
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste")
-      }else{
+      } else {
         console.log("Perdiste")
       }
     });
   }, [socket]);
 
   useEffect(() => {
-    console.log(habRival)
+    console.log(hacerRival)
     if (avisitoFlag) {
-      if (habRival != undefined) {
-        restarVida(habRival.daño)
+      if (hacerRival != undefined) {
+        if (habRival != undefined) {
+          restarVida(habRival.daño, hacerRival)
+        } else {
+          const probabilidadEsquivar = Math.min(personaje.velocidad, 100);
+          const random = Math.random() * 100;
+          const esquiva = random < probabilidadEsquivar;
+          restarVida(null, hacerRival,esquiva)
+        }
+
       } else {
         console.log("No encuentra habilidad rival")
       }
@@ -95,10 +120,10 @@ export default function Home() {
   }, [avisitoFlag]);
 
   useEffect(() => {
-    
+
     if (personajesFlag) {
-      if (personaje != undefined && personajeRival !=undefined) {
-        restarVida(dataRival.daño)
+      if (personaje != undefined && personajeRival != undefined) {
+        restarVida(dataRival.daño, hacer)
       } else {
         console.log("No encuentra habilidad rival")
       }
@@ -174,58 +199,96 @@ export default function Home() {
   }
 
   function ejecutarHabilidad(event) {
-    console.log(event.ataque.daño);
-    setHabElegida(event.ataque);
-
-    if (personaje.energiaActual >= event.ataque.consumo) {
-      setPersonaje(prevPersonaje => ({
-        ...prevPersonaje,
-        energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
-      }));
-      setMensajeError(null);
+    if (event.ataque == "defensa") {
+      setHabElegida("defensa");
       setEmpieza(false);
+
+      socket.emit("cambiarTurno", {
+        idUsuario: idUsuario,
+        numeroTurno: numeroTurno,
+        condicion: "defensa"
+      });
+
     } else {
-      setMensajeError("No tienes suficiente energía.");
-      setMostrarModal(true);
+      console.log(event.ataque.daño);
+      setHabElegida(event.ataque);
 
-      setBarraProgreso(0);
+      if (personaje.energiaActual >= event.ataque.consumo) {
+        setPersonaje(prev => ({
+          ...prev,
+          energiaActual: prev.energiaActual - event.ataque.consumo,
+        }));
+        setMensajeError(null);
+        setEmpieza(false);
+      } else {
+        setMensajeError("No tienes suficiente energía.");
+        setMostrarModal(true);
+        setBarraProgreso(0);
 
-      const interval = setInterval(() => {
-        setBarraProgreso((oldProgress) => {
-          if (oldProgress >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return oldProgress + 5;
-        });
-      }, 100);
+        const interval = setInterval(() => {
+          setBarraProgreso(old => {
+            if (old >= 100) {
+              clearInterval(interval);
+              return 100;
+            }
+            return old + 5;
+          });
+        }, 100);
 
-      setTimeout(() => {
-        setMostrarModal(false);
-      }, 2000);
+        setTimeout(() => {
+          setMostrarModal(false);
+        }, 2000);
+      }
+
+      socket.emit("cambiarTurno", {
+        idUsuario: idUsuario,
+        numeroTurno: numeroTurno,
+        daño: event.ataque.daño,
+        nombreHabilidad: event.ataque.nombre
+      });
     }
-    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
   }
 
-  function restarVida(daño) {
-    let dañoRival = 0
-    if(personaje.tipo == personajeRival.tipo){
-      daño = daño * 0.5
-      dañoRival = habElegida.daño * 0.5
-    }else{
-      daño = daño * 0.75
-      dañoRival = habElegida.daño * 0.75
+
+  function restarVida(daño, haz, esquiva) {
+    if (!personaje || !personajeRival) return;
+
+    if (haz == "ataca") {
+      let dañoRival = 0;
+
+      if (personaje.tipo == personajeRival.tipo) {
+        daño *= 0.5;
+        dañoRival = habElegida.daño * 0.5;
+      } else {
+        daño *= 0.75;
+        dañoRival = habElegida.daño * 0.75;
+      }
+
+      setPersonaje(prev => ({
+        ...prev,
+        saludActual: Math.max(prev.saludActual - daño, 0),
+      }));
+
+      setPersonajeRival(prev => ({
+        ...prev,
+        saludActual: Math.max(prev.saludActual - dañoRival, 0),
+      }));
+
+    } else if (haz == "defensa") {
+      if (esquiva) {
+        console.log(`${personaje.nombre} esquivó el ataque 💨`);
+        return;
+      } else {
+        console.log(`${personaje.nombre} no esquivó 😢`);
+
+        setPersonaje(prev => ({
+          ...prev,
+          saludActual: Math.max(prev.saludActual - dañoReducido, 0),
+        }));
+      }
     }
-    setPersonaje(prevPersonaje => ({
-      ...prevPersonaje,
-      saludActual: prevPersonaje.saludActual - daño,
-    }));
-    setPersonajeRival(prevPersonajeRival => ({
-      ...prevPersonajeRival,
-      saludActual: prevPersonajeRival.saludActual - dañoRival,
-    }))
-    
   }
+
 
   return (
     <main className="contenedor">
@@ -276,7 +339,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
     </main>
   );
 }
