@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import styles from "./Personaje.module.css";
@@ -13,7 +12,7 @@ export default function Personaje(props) {
 
   useEffect(() => {
     setEnergiaActual(props.energiaActual);
-  }, [props.energiaActual]);
+  }, [props.energiaActual]); 
 
   const porcentajeVida = (saludActual / props.saludMax) * 100;
   const porcentajeEnergia = (energiaActual / props.energiaMax) * 100;
@@ -38,19 +37,22 @@ export default function Personaje(props) {
         {saludActual} / {props.saludMax} HP
       </p>
 
-      <div className={styles.vidaContainer}>
-        <div
-          className={clsx(styles.vidaBarra, {
-            [styles.energuia]: true
-          })}
-          style={{ width: `${porcentajeEnergia}%` }}
-        />
-      </div>
+      {energiaActual && (
+        <>
+          <div className={styles.vidaContainer}>
+            <div
+              className={clsx(styles.vidaBarra, {
+                [styles.energuia]: true,
+              })}
+              style={{ width: `${porcentajeEnergia}%` }}
+            />
+          </div>
 
-      <p className={styles.vidaTexto}>
-        {energiaActual} / {props.energiaMax} ✨
-      </p>
+          <p className={styles.vidaTexto}>
+            {energiaActual} / {props.energiaMax} ✨
+          </p>
+        </>
+      )}
     </div>
-
   );
 }

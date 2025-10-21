@@ -1,19 +1,25 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import clsx from "clsx";
 import styles from "./MenuPelea.module.css";
 
 export default function MenuPelea(props) {
-  const [menu, setMenu] = useState("inicio");
+  const [menu, setMenu] = useState("");
   const [ataqueSeleccionado, setAtaqueSeleccionado] = useState(false);
+
+  useEffect(() => {
+    if (props.empieza) {
+      setMenu("inicio");
+    } else {
+      setMenu("Esperando");
+    }
+  }, [props.empieza]);
 
   const mostrarMenuAtaque = () => {
     setMenu("ataque");
     setAtaqueSeleccionado(true);
   };
-
-  const mostrarMenuDefensa = () => alert("Defender activado");
 
   const volverAlInicio = () => {
     setMenu("inicio");
@@ -39,7 +45,17 @@ export default function MenuPelea(props) {
           </div>
           <div className={styles.columnaBotones}>
             <Button onClick={mostrarMenuAtaque} text="Atacar" />
-            <Button onClick={mostrarMenuDefensa} text="Defender" />
+            <Button onClick={() => props.onClick({ defensa: true })} text="Defender" />
+
+          </div>
+        </div>
+      )}
+
+      {/* MENU ESPERA */}
+      {menu === "Esperando" && (
+        <div className={clsx(styles.menuEspera)}>
+          <div className={styles.columnaTexto}>
+            <h2 className={styles.titulo}>Esperando que el rival haga su ataque</h2>
           </div>
         </div>
       )}
@@ -61,14 +77,14 @@ export default function MenuPelea(props) {
           <div className={styles.columnaBotones}>
             {/* Primera columna de ataques */}
             {ataquesColumna1.map((ataque, i) => (
-              <Button key={i} text={ataque.nombre} />
+              <Button key={i} text={ataque.nombre} onClick={() => props.onClick({ ataque })} />
             ))}
           </div>
 
           <div className={styles.columnaBotones}>
             {/* Segunda columna de ataques */}
             {ataquesColumna2.map((ataque, i) => (
-              <Button key={i + mitad} text={ataque.nombre} />
+              <Button key={i + mitad} text={ataque.nombre} onClick={() => props.onClick({ ataque })} />
             ))}
           </div>
 
