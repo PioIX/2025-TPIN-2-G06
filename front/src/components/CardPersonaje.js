@@ -8,6 +8,7 @@ export default function CardPersonaje(props) {
       <div className={styles.imageWrapper}>
         <img src={props.foto} alt={props.nombre} className={styles.image} />
       </div>
+      <p>{props.foto}</p>
       <h3 className={styles.name}>{props.nombre}</h3>
     </div>
   );

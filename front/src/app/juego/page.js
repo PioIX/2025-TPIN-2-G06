@@ -3,7 +3,7 @@ import MenuPelea from "@/components/MenuPelea";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Personaje from "@/components/Personaje";
-import Button from "@/components/Button";
+import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
 
 export default function Home() {
@@ -70,6 +70,7 @@ export default function Home() {
 
       const data = await response.json();
       if (data.res) {
+        console.log("Personaje encontrado:", data.res);
         return (data.res)
       }
     } catch (error) {
@@ -94,6 +95,7 @@ export default function Home() {
         setidPersonajeRival(data.idPersonaje);
         const rival = await encontrarP(data.idPersonaje);
         setPersonajeRival(rival);
+        console.log("ID Personaje Rival:", data.idPersonaje);
       }
     } catch (err) {
       console.error(err);
@@ -137,7 +139,7 @@ export default function Home() {
 
 
       ) : (
-        <div>
+        <div className={styles.roomInfoContainer}>
           <p>El id de la sala es: {searchParams.get("idRoom")}</p>
           <p>Cargando personaje...</p>
         </div>

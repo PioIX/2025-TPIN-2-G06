@@ -52,7 +52,7 @@ export default function ElegirPersonaje() {
           <CardPersonaje
             key={personaje.idPersonaje}
             nombre={personaje.nombre}
-            foto={personaje.foto}
+            foto={personaje.fotoPersonaje}
             onClick={() => elegirPersonaje(personaje)}
           />
         ))}
