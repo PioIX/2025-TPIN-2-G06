@@ -324,6 +324,14 @@ io.on("connection", (socket) => {
         console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
 
+    socket.on("ganador", (data) => {
+        const session = socket.request.session;
+        console.log(data.idUsuario)
+        io.to(session.room).emit("ganadorAviso", {
+            idUsuario: data.idUsuario,
+        });
+    });
+
     socket.on("disconnect", () => {
         console.log("❌ Cliente desconectado");
     });
