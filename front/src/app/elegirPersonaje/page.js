@@ -1,97 +1,74 @@
 "use client";
-import styles from "./elegirPersonaje.module.css";
-
 import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import PersonajeLuqui from "@/components/PersonajeLuqui";
+import CardPersonaje from "@/components/CardPersonaje";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import styles from "./elegirPersonaje.module.css";
 
 export default function ElegirPersonaje() {
   const [personajes, setPersonajes] = useState([]);
-  const searchParams = useSearchParams();
   const [personajeSeleccionado, setPersonajeSeleccionado] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const router = useRouter();
-  const [idUsuario, setIsUsuario] = useState(null);
-  const [idPersonaje, setIdPersonaje] = useState(null)
-
+  const searchParams = useSearchParams();
+  const idUsuario = searchParams.get("idUsuario");
 
   useEffect(() => {
+    const obtenerPersonajes = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/obtenerPersonajes");
+        const data = await response.json();
+        setPersonajes(data);
+      } catch (error) {
+        console.error("Error al obtener personajes:", error);
+      }
+    };
+    
     obtenerPersonajes();
-    obtenerIdUsuario();
   }, []);
 
-  const obtenerIdUsuario = () => {
-    setIsUsuario(searchParams.get("idUsuario"));
-  };
-
-  async function obtenerPersonajes() {
-    try {
-      const response = await fetch("http://localhost:4000/obtenerPersonajes", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      setPersonajes(data);
-    } catch (error) {
-      console.error("Error al obtener los personajes:", error);
-    }
-  }
-
-  const elegir = (e) => {
-    const id = parseInt(e.target.value);
-    setIdPersonaje(id);
-    const personaje = personajes.find((p) => p.idPersonaje === id);
+  const elegirPersonaje = (personaje) => {
     setPersonajeSeleccionado(personaje);
     setMostrarModal(true);
   };
 
-
-  const cancelar = () => {
+  const cancelarSeleccion = () => {
     setMostrarModal(false);
     setPersonajeSeleccionado(null);
-    setIdPersonaje(null)
   };
 
-  const handleElegir = () => {
-    router.push(`/crearPartida?idUsuario=${idUsuario}&personaje=${idPersonaje}`);
+  const manejarElegir = () => {
+    router.push(`/crearPartida?idUsuario=${idUsuario}&personaje=${personajeSeleccionado.idPersonaje}`);
   };
 
   return (
-    <div className={styles.elegirWrapper}>
-      <h1 className={styles.elegirTitle}>Seleccioná tu personaje</h1>
+    <div className={styles.wrapper}>
+      <h1 className={styles.titulo}>Selecciona tu personaje</h1>
 
-      <select onChange={elegir} defaultValue="" className={styles.elegirSelect}>
-        <option value="" disabled>
-          -- Elija un personaje --
-        </option>
+      <div className={styles.gridPersonajes}>
         {personajes.map((personaje) => (
-          <option key={personaje.idPersonaje} value={personaje.idPersonaje}>
-            {personaje.nombre}
-          </option>
+          <CardPersonaje
+            key={personaje.idPersonaje}
+            nombre={personaje.nombre}
+            foto={personaje.fotoPersonaje}
+            onClick={() => elegirPersonaje(personaje)}
+          />
         ))}
-      </select>
+      </div>
 
       {mostrarModal && personajeSeleccionado && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalBox}>
-            <PersonajeLuqui
-              nombre={personajeSeleccionado.nombre}
-              tipo={personajeSeleccionado.tipo}
-              velocidad={personajeSeleccionado.velocidad}
-              salud={personajeSeleccionado.salud}
-              energia={personajeSeleccionado.energia}
-              foto={personajeSeleccionado.foto}
-            />
+            <PersonajeLuqui {...personajeSeleccionado} />
             <div className={styles.modalButtons}>
-              <Button text="Cancelar" onClick={cancelar} />
-              <Button text="Elegir" onClick={handleElegir} />
+              <Button text="Cancelar" onClick={cancelarSeleccion} />
+              <Button text="Elegir" onClick={manejarElegir} />
             </div>
           </div>
         </div>
       )}
     </div>
   );
-
 }

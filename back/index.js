@@ -98,6 +98,7 @@ app.get('/obtenerPartidas', async function (req, res) {
         res.status(500).send("Error al obtener las partidas");
     }
 });
+
 app.post('/encontrarPersonaje', async function (req, res) {
     try {
         const id = req.body.idHabilidad; // <-- extraemos el ID del body
@@ -193,12 +194,12 @@ app.post("/obtenerPersonajeOtroJugador", async (req, res) => {
 });
 
 
-
 app.post('/entrarPartida', async function (req, res) {
     try {
         const tipo = req.body.tipo;
 
         if (tipo == "crear") {
+            // Crear nueva sala
             const result = await realizarQuery(`
                 INSERT INTO Salas (esta_activa)
                 VALUES (1);
@@ -206,6 +207,7 @@ app.post('/entrarPartida', async function (req, res) {
 
             const nuevaRoomId = result.insertId;
 
+            // Insertar primer jugador
             await realizarQuery(`
                 INSERT INTO Sala_Usuarios (idUsuario, idPersonaje, numero_room)
                 VALUES ('${req.body.user}', '${req.body.personaje}', '${nuevaRoomId}');
@@ -219,6 +221,7 @@ app.post('/entrarPartida', async function (req, res) {
             });
 
         } else if (tipo == "unirse") {
+            // Verificar si la sala existe y está activa
             const existe = await realizarQuery(`
                 SELECT * FROM Salas 
                 WHERE numero_room='${req.body.roomId}' AND esta_activa = 1;
@@ -231,6 +234,23 @@ app.post('/entrarPartida', async function (req, res) {
                 });
             }
 
+            // Contar cuántos jugadores hay en la sala
+            const jugadores = await realizarQuery(`
+                SELECT COUNT(*) AS cantidad FROM Sala_Usuarios
+                WHERE numero_room='${req.body.roomId}';
+            `);
+
+            const cantidad = jugadores[0].cantidad;
+
+            if (cantidad >= 2) {
+                // Sala llena
+                return res.send({
+                    res: "La sala ya tiene 2 jugadores y no admite más.",
+                    validar: false
+                });
+            }
+
+            // Insertar nuevo jugador
             await realizarQuery(`
                 INSERT INTO Sala_Usuarios (idUsuario, idPersonaje, numero_room)
                 VALUES ('${req.body.user}', '${req.body.personaje}', '${req.body.roomId}');
@@ -249,11 +269,6 @@ app.post('/entrarPartida', async function (req, res) {
         res.status(500).send({ res: "Error al procesar la partida", validar: false });
     }
 });
-
-
-
-
-
 
 // ===============================
 // SOCKET.IO CONFIG
