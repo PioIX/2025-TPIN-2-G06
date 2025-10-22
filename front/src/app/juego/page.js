@@ -25,6 +25,8 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({})
+  const [yoEsquivo, setYoesquivo] = useState(false)
+  const [otroEsquiva, setOtroesquiva] = useState(false)
 
   useEffect(() => {
     if (!socket) return;
@@ -46,12 +48,16 @@ export default function Home() {
         setEmpieza(true);
         setNumeroTurno(data.numeroTurno + 1);
 
-        if (data.daño && data.nombreHabilidad) {
+        if (data.daño != undefined && data.nombreHabilidad != undefined) {
           habRivalTemp = {
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad
           }
           setHabRival(habRivalTemp);
+          if (data.esquiva != undefined) {
+            console.log(data.esquiva)
+            setOtroesquiva(data.esquiva)
+          }
         } else {
           console.error('Datos inválidos para habRival:', data);
         }
@@ -76,7 +82,7 @@ export default function Home() {
       console.log(data.idUsuario)
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste")
-      }else{
+      } else {
         console.log("Perdiste")
       }
     });
@@ -95,9 +101,9 @@ export default function Home() {
   }, [avisitoFlag]);
 
   useEffect(() => {
-    
+
     if (personajesFlag) {
-      if (personaje != undefined && personajeRival !=undefined) {
+      if (personaje != undefined && personajeRival != undefined) {
         restarVida(dataRival.daño)
       } else {
         console.log("No encuentra habilidad rival")
@@ -176,59 +182,103 @@ export default function Home() {
   }
 
   function ejecutarHabilidad(event) {
-    console.log(event.ataque.daño);
-    setHabElegida(event.ataque);
+    if (event.atacar == true) {
+      console.log(event.ataque.daño);
+      setHabElegida(event.ataque);
+      if (personaje.energiaActual >= event.ataque.consumo) {
+        setPersonaje(prevPersonaje => ({
+          ...prevPersonaje,
+          energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
+        }));
+        setMensajeError(null);
+        setEmpieza(false);
+        socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
+      } else {
+        setMensajeError("No tienes suficiente energía.");
+        setMostrarModal(true);
 
-    if (personaje.energiaActual >= event.ataque.consumo) {
-      setPersonaje(prevPersonaje => ({
-        ...prevPersonaje,
-        energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
-      }));
-      setMensajeError(null);
-      setEmpieza(false);
-      socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
-    } else {
-      setMensajeError("No tienes suficiente energía.");
-      setMostrarModal(true);
+        setBarraProgreso(0);
 
-      setBarraProgreso(0);
+        const interval = setInterval(() => {
+          setBarraProgreso((oldProgress) => {
+            if (oldProgress >= 100) {
+              clearInterval(interval);
+              return 100;
+            }
+            return oldProgress + 5;
+          });
+        }, 100);
 
-      const interval = setInterval(() => {
-        setBarraProgreso((oldProgress) => {
-          if (oldProgress >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return oldProgress + 5;
-        });
-      }, 100);
-
-      setTimeout(() => {
-        setMostrarModal(false);
-      }, 2000);
+        setTimeout(() => {
+          setMostrarModal(false);
+        }, 2000);
+      }
+    } else if (event.defensa == true) {
+      setHabElegida({
+        daño: 0,
+        nombreHabilidad: "Defensa"
+      });
+      setEmpieza(false)
+      const probabilidadAleatoria = Math.floor(Math.random() * 100) + 1;
+      console.log(`Probabilidad Aleatoria: ${probabilidadAleatoria}`);
+      if (probabilidadAleatoria <= personajeRival.velocidad) {
+        setYoesquivo(true)
+        setPersonaje(prevPersonaje => ({
+          ...prevPersonaje,
+          energiaActual: prevPersonaje.energiaActual + 20,
+        }));
+      } else { setYoesquivo(false) }
+      socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: 0, nombreHabilidad: "Defensa", esquiva: probabilidadAleatoria });
     }
-    
   }
 
   function restarVida(daño) {
-    let dañoRival = 0
-    if(personaje.tipo == personajeRival.tipo){
-      daño = daño * personaje.fuerza /100 * 0.5
-      dañoRival = habElegida.daño * personajeRival.fuerza /100 * 0.5
-    }else{
-      daño = daño * personaje.fuerza /100 * 0.75          
-      dañoRival = habElegida.daño * personajeRival.fuerza /100 * 0.75
+    let dañoRival = 0;
+    let dañoPersonaje = daño;
+    console.log(personaje.fuerza)
+    console.log(personajeRival.fuerza)
+
+    if (daño > 0 && habElegida.daño > 0) {
+      daño = daño * personaje.fuerza / 100 * 0.75;
+      dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
     }
+
+    if (daño === 0 && habElegida.daño === 0) {
+      console.log("Ambos personajes han defendido, no reciben daño");
+      return;
+    }
+
+    if (daño === 0 && habElegida.daño > 0) {
+      if (yoEsquivo) {
+        console.log("El rival defendio");
+        dañoRival = 0;
+      } else {
+        console.log("El rival no defendio");
+        dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+      }
+    }
+
+    if (daño > 0 && habElegida.daño === 0) {
+      if (otroEsquiva) {
+        console.log("Yo defendi");
+        daño = 0
+      } else {
+        console.log("No defendi");
+        daño = daño * personaje.fuerza / 100 * 0.75;
+      }
+    }
+
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
       saludActual: prevPersonaje.saludActual - daño,
     }));
+
     setPersonajeRival(prevPersonajeRival => ({
       ...prevPersonajeRival,
       saludActual: prevPersonajeRival.saludActual - dañoRival,
-    }))
-    
+    }));
   }
+
 
   return (
     <main className="contenedor">
