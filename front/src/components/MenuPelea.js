@@ -77,14 +77,14 @@ export default function MenuPelea(props) {
           <div className={styles.columnaBotones}>
             {/* Primera columna de ataques */}
             {ataquesColumna1.map((ataque, i) => (
-              <Button key={i} text={ataque.nombre} onClick={() => props.onClick({ ataque })} />
+              <Button key={i} text={ataque.nombre} onClick={() => props.onClick({ ataque, atacar:true })} />
             ))}
           </div>
 
           <div className={styles.columnaBotones}>
             {/* Segunda columna de ataques */}
             {ataquesColumna2.map((ataque, i) => (
-              <Button key={i + mitad} text={ataque.nombre} onClick={() => props.onClick({ ataque })} />
+              <Button key={i + mitad} text={ataque.nombre} onClick={() => props.onClick({ ataque, atacar:true })} />
             ))}
           </div>
 

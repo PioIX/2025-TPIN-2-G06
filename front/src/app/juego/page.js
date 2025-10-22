@@ -46,19 +46,13 @@ export default function Home() {
 
     socket.on("validarCambioTurno", (data) => {
       if (data.idUsuario !== idUsuario) {
-        if (data.hace == "ataca") {
-          console.log(data)
-          setEmpieza(true);
-          setNumeroTurno(data.numeroTurno + 1);
-
-          if (data.daño && data.nombreHabilidad) {
-            habRivalTemp = {
-              daño: data.daño,
-              nombreHabilidad: data.nombreHabilidad
-            }
-            setHabRival(habRivalTemp);
-          } else {
-            console.error('Datos inválidos para habRival:', data);
+        setEmpieza(true);
+        setNumeroTurno(data.numeroTurno + 1);
+        console.log(data)
+        if (data.daño != undefined && data.nombreHabilidad != undefined) {
+          habRivalTemp = {
+            daño: data.daño,
+            nombreHabilidad: data.nombreHabilidad
           }
 
           if (data.numeroTurno == 1) {
@@ -199,8 +193,16 @@ export default function Home() {
   }
 
   function ejecutarHabilidad(event) {
-    if (event.ataque == "defensa") {
-      setHabElegida("defensa");
+    if(event.atacar == true){
+    console.log(event.ataque.daño);
+    setHabElegida(event.ataque);
+
+    if (personaje.energiaActual >= event.ataque.consumo) {
+      setPersonaje(prevPersonaje => ({
+        ...prevPersonaje,
+        energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
+      }));
+      setMensajeError(null);
       setEmpieza(false);
 
       socket.emit("cambiarTurno", {
@@ -247,7 +249,11 @@ export default function Home() {
         nombreHabilidad: event.ataque.nombre
       });
     }
+  }else if(event.defensa == true){
+    setEmpieza(false);
+    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: 0, nombreHabilidad: "Defensa" });
   }
+}
 
 
   function restarVida(daño, haz, esquiva) {
