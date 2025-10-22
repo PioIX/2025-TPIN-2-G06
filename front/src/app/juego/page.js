@@ -186,6 +186,7 @@ export default function Home() {
       }));
       setMensajeError(null);
       setEmpieza(false);
+      socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
     } else {
       setMensajeError("No tienes suficiente energía.");
       setMostrarModal(true);
@@ -206,17 +207,17 @@ export default function Home() {
         setMostrarModal(false);
       }, 2000);
     }
-    socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
+    
   }
 
   function restarVida(daño) {
     let dañoRival = 0
     if(personaje.tipo == personajeRival.tipo){
-      daño = daño * 0.5
-      dañoRival = habElegida.daño * 0.5
+      daño = daño * personaje.fuerza /100 * 0.5
+      dañoRival = habElegida.daño * personajeRival.fuerza /100 * 0.5
     }else{
-      daño = daño * 0.75
-      dañoRival = habElegida.daño * 0.75
+      daño = daño * personaje.fuerza /100 * 0.75          
+      dañoRival = habElegida.daño * personajeRival.fuerza /100 * 0.75
     }
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
