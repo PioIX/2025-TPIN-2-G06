@@ -18,22 +18,29 @@ export default function Home() {
   const [empieza, setEmpieza] = useState(false);
   const [habElegida, setHabElegida] = useState();
   const [habRival, setHabRival] = useState();
-  const [numeroTurno, setNumeroTurno] = useState(0)
+  const [numeroTurno, setNumeroTurno] = useState(0);
   const [mensajeError, setMensajeError] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [barraProgreso, setBarraProgreso] = useState(0); // Estado para la barra de progreso
+  const [barraProgreso, setBarraProgreso] = useState(0);
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
-  const [dataRival, setDataRival] = useState({})
-  const [yoEsquivo, setYoesquivo] = useState(false)
-  const [otroEsquiva, setOtroesquiva] = useState(false)
+  const [dataRival, setDataRival] = useState({});
+  const [yoEsquivo, setYoesquivo] = useState(false);
+  const [otroEsquiva, setOtroesquiva] = useState(false);
+  
+  // Estados para efectos visuales
+  const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
+  const [mensajeNotificacion, setMensajeNotificacion] = useState("");
+  const [tipoNotificacion, setTipoNotificacion] = useState("");
+  const [flashRojo, setFlashRojo] = useState({ yo: false, rival: false });
+  const [numerosFlotantes, setNumerosFlotantes] = useState([]);
 
   useEffect(() => {
     if (!socket) return;
     if (!idRoom) return;
 
     socket.emit("joinRoom", { room: idRoom });
-    let habRivalTemp = {}
+    let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
 
@@ -52,11 +59,11 @@ export default function Home() {
           habRivalTemp = {
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad
-          }
+          };
           setHabRival(habRivalTemp);
           if (data.esquiva != undefined) {
-            console.log(data.esquiva)
-            setOtroesquiva(data.esquiva)
+            console.log(data.esquiva);
+            setOtroesquiva(data.esquiva);
           }
         } else {
           console.error('Datos inválidos para habRival:', data);
@@ -64,8 +71,8 @@ export default function Home() {
 
         if (data.numeroTurno == 1) {
           setNumeroTurno(0);
-          setDataRival(data)
-          setPersonajesFlag(true)
+          setDataRival(data);
+          setPersonajesFlag(true);
           socket.emit("avisar", { data: idUsuario });
         }
       }
@@ -73,42 +80,41 @@ export default function Home() {
 
     socket.on("avisito", (data) => {
       if (data.idUsuario !== idUsuario) {
-        setAvisitoFlag(true)
+        setAvisitoFlag(true);
       }
     });
 
     socket.on("ganadorAviso", (data) => {
-      console.log(idUsuario)
-      console.log(data.idUsuario)
+      console.log(idUsuario);
+      console.log(data.idUsuario);
       if (data.idUsuario !== idUsuario) {
-        console.log("Ganaste")
+        console.log("Ganaste");
       } else {
-        console.log("Perdiste")
+        console.log("Perdiste");
       }
     });
   }, [socket]);
 
   useEffect(() => {
-    console.log(habRival)
+    console.log(habRival);
     if (avisitoFlag) {
       if (habRival != undefined) {
-        restarVida(habRival.daño)
+        restarVida(habRival.daño);
       } else {
-        console.log("No encuentra habilidad rival")
+        console.log("No encuentra habilidad rival");
       }
-      setAvisitoFlag(false)
+      setAvisitoFlag(false);
     }
   }, [avisitoFlag]);
 
   useEffect(() => {
-
     if (personajesFlag) {
       if (personaje != undefined && personajeRival != undefined) {
-        restarVida(dataRival.daño)
+        restarVida(dataRival.daño);
       } else {
-        console.log("No encuentra habilidad rival")
+        console.log("No encuentra habilidad rival");
       }
-      setPersonajesFlag(false)
+      setPersonajesFlag(false);
     }
   }, [personajesFlag]);
 
@@ -125,7 +131,7 @@ export default function Home() {
   useEffect(() => {
     if (personaje) {
       if (personaje.saludActual <= 0) {
-        socket.emit("ganador", { idUsuario: idUsuario })
+        socket.emit("ganador", { idUsuario: idUsuario });
       }
     }
   }, [personaje]);
@@ -149,7 +155,7 @@ export default function Home() {
       const data = await response.json();
       if (data.res) {
         console.log("Personaje encontrado:", data.res);
-        return (data.res)
+        return (data.res);
       }
     } catch (error) {
       console.error(error);
@@ -218,56 +224,117 @@ export default function Home() {
         daño: 0,
         nombreHabilidad: "Defensa"
       });
-      setEmpieza(false)
+      setEmpieza(false);
       const probabilidadAleatoria = Math.floor(Math.random() * 100) + 1;
       console.log(`Probabilidad Aleatoria: ${probabilidadAleatoria}`);
       if (probabilidadAleatoria <= personajeRival.velocidad) {
-        setYoesquivo(true)
+        setYoesquivo(true);
         setPersonaje(prevPersonaje => ({
           ...prevPersonaje,
           energiaActual: prevPersonaje.energiaActual + 20,
         }));
-      } else { setYoesquivo(false) }
+      } else { 
+        setYoesquivo(false);
+      }
       socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: 0, nombreHabilidad: "Defensa", esquiva: probabilidadAleatoria });
     }
+  }
+
+  function agregarNumeroFlotante(daño, esRival) {
+    const id = Date.now() + Math.random();
+    const nuevo = {
+      id,
+      daño: Math.round(daño),
+      esRival
+    };
+    
+    setNumerosFlotantes(prev => [...prev, nuevo]);
+    
+    setTimeout(() => {
+      setNumerosFlotantes(prev => prev.filter(n => n.id !== id));
+    }, 2000);
+  }
+
+  function mostrarNotificacionCombate(mensaje, tipo) {
+    setMensajeNotificacion(mensaje);
+    setTipoNotificacion(tipo);
+    setMostrarNotificacion(true);
+
+    setTimeout(() => {
+      setMostrarNotificacion(false);
+    }, 3500);
   }
 
   function restarVida(daño) {
     let dañoRival = 0;
     let dañoPersonaje = daño;
-    console.log(personaje.fuerza)
-    console.log(personajeRival.fuerza)
+    let mensaje = "";
+    let tipo = "";
 
+    console.log(personaje.fuerza);
+    console.log(personajeRival.fuerza);
+
+    // Ambos atacan
     if (daño > 0 && habElegida.daño > 0) {
       daño = daño * personaje.fuerza / 100 * 0.75;
       dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+      mensaje = `⚔️ ¡Intercambio de golpes!`;
+      tipo = "ataque";
     }
 
+    // Ambos defienden
     if (daño === 0 && habElegida.daño === 0) {
       console.log("Ambos personajes han defendido, no reciben daño");
+      mensaje = "🛡️ ¡Ambos se defienden!\nNinguno recibe daño";
+      tipo = "defensa";
+      mostrarNotificacionCombate(mensaje, tipo);
       return;
     }
 
+    // Rival defiende, yo ataco
     if (daño === 0 && habElegida.daño > 0) {
       if (yoEsquivo) {
-        console.log("El rival defendio");
+        console.log("El rival defendió y esquivó");
         dañoRival = 0;
+        mensaje = `🛡️ ¡${personajeRival.nombre} esquivó!`;
+        tipo = "esquiva";
       } else {
-        console.log("El rival no defendio");
+        console.log("El rival no defendió");
         dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+        mensaje = `⚔️ ¡Haz impactado con tu ataque`;
+        tipo = "ataque";
       }
     }
 
+    // Yo defiendo, rival ataca
     if (daño > 0 && habElegida.daño === 0) {
       if (otroEsquiva) {
-        console.log("Yo defendi");
-        daño = 0
+        console.log("Yo defendí y esquivé");
+        daño = 0;
+        mensaje = `🛡️ ¡Esquivaste!\n${habRival.nombreHabilidad} no te alcanzó`;
+        tipo = "esquiva";
       } else {
-        console.log("No defendi");
+        console.log("No defendí");
         daño = daño * personaje.fuerza / 100 * 0.75;
+        mensaje = `💥 ¡Te golpearon con ${habRival.nombreHabilidad}!\nNo pudiste esquivar`;
+        tipo = "golpe";
       }
     }
 
+    // Aplicar efectos visuales
+    if (daño > 0) {
+      setFlashRojo(prev => ({ ...prev, yo: true }));
+      agregarNumeroFlotante(daño, false);
+      setTimeout(() => setFlashRojo(prev => ({ ...prev, yo: false })), 500);
+    }
+
+    if (dañoRival > 0) {
+      setFlashRojo(prev => ({ ...prev, rival: true }));
+      agregarNumeroFlotante(dañoRival, true);
+      setTimeout(() => setFlashRojo(prev => ({ ...prev, rival: false })), 500);
+    }
+
+    // Aplicar daño
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
       saludActual: prevPersonaje.saludActual - daño,
@@ -277,30 +344,50 @@ export default function Home() {
       ...prevPersonajeRival,
       saludActual: prevPersonajeRival.saludActual - dañoRival,
     }));
+
+    // Mostrar notificación
+    mostrarNotificacionCombate(mensaje, tipo);
   }
 
-
   return (
-    <main className="contenedor">
+    <main className="contenedor">``
       {personaje && personajeRival ? (
         <div>
-          <Personaje
-            className="personajePropio"
-            nombre={personaje.nombre}
-            imagen={personaje.fotoPersonaje}
-            saludMax={personaje.saludMax}
-            saludActual={personaje.saludActual}
-            energiaMax={personaje.energiaMax}
-            energiaActual={personaje.energiaActual}
-          />
+          <div className={flashRojo.yo ? 'flash-rojo' : ''}>
+            <Personaje
+              className="personajePropio"
+              nombre={personaje.nombre}
+              imagen={personaje.fotoPersonaje}
+              saludMax={personaje.saludMax}
+              saludActual={personaje.saludActual}
+              energiaMax={personaje.energiaMax}
+              energiaActual={personaje.energiaActual}
+            />
+          </div>
 
-          <Personaje
-            className="personajeRival"
-            nombre={personajeRival.nombre}
-            imagen={personajeRival.fotoPersonaje}
-            saludMax={personajeRival.saludMax}
-            saludActual={personajeRival.saludActual}
-          />
+          <div className={flashRojo.rival ? 'flash-rojo' : ''}>
+            <Personaje
+              className="personajeRival"
+              nombre={personajeRival.nombre}
+              imagen={personajeRival.fotoPersonaje}
+              saludMax={personajeRival.saludMax}
+              saludActual={personajeRival.saludActual}
+            />
+          </div>
+
+          {/* Números flotantes */}
+          {numerosFlotantes.map(num => (
+            <div
+              key={num.id}
+              className="numero-flotante"
+              style={{
+                left: num.esRival ? '75%' : '25%',
+                top: '40%'
+              }}
+            >
+              -{num.daño}
+            </div>
+          ))}
 
           <div className="menu">
             <MenuPelea
@@ -322,14 +409,18 @@ export default function Home() {
       {mensajeError && mostrarModal && (
         <div className="modalERROR">
           <p>{mensajeError}</p>
-
-          {/* Barra de carga */}
           <div className="bar-container">
             <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
           </div>
         </div>
       )}
 
+      {/* Notificación de Combate */}
+      {mostrarNotificacion && (
+        <div className={`notificacion-combate ${tipoNotificacion}`}>
+          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
+        </div>
+      )}
     </main>
   );
 }
