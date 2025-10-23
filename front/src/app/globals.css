@@ -10,7 +10,6 @@ html, body {
   font-family: 'Poppins', sans-serif;
   color: #f9fafb;
   background: linear-gradient(135deg, #1f2937, #111827);
-  
 }
 
 /* ===================== */
@@ -136,7 +135,6 @@ input:focus {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  /*animation: fadeInOverlay 0.4s ease-out;*/
 }
 
 /* Estilo del contenido del modal */
@@ -150,7 +148,6 @@ input:focus {
   width: 100%;
   max-width: 400px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  /*animation: fadeInContent 0.4s ease-out;*/
 }
 
 .modalContent h2 {
@@ -183,7 +180,6 @@ input:focus {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -194,7 +190,6 @@ input:focus {
     transform: scale(0.96);
     opacity: 0;
   }
-
   to {
     transform: scale(1);
     opacity: 1;
@@ -300,38 +295,275 @@ input:focus {
   margin: 0;
 }
 
-/* Estilo general del modal */
+/* ================================= */
+/* === EFECTOS DE COMBATE NUEVOS === */
+/* ================================= */
+
+/* Flash rojo cuando recibe daño */
+.flash-rojo {
+  animation: flashRojo 0.5s ease-in-out;
+}
+
+@keyframes flashRojo {
+  0%, 100% { 
+    filter: brightness(1); 
+  }
+  25% { 
+    filter: brightness(2.5) drop-shadow(0 0 30px #ff0000); 
+  }
+  50% { 
+    filter: brightness(2) drop-shadow(0 0 40px #ff0000) drop-shadow(0 0 20px #ff4444); 
+  }
+  75% { 
+    filter: brightness(2.5) drop-shadow(0 0 30px #ff0000); 
+  }
+}
+
+/* Números flotantes de daño */
+.numero-flotante {
+  position: fixed;
+  font-size: 56px;
+  font-weight: 900;
+  color: #ff0000;
+  text-shadow: 
+    0 0 10px #ff0000,
+    0 0 20px #ff0000,
+    0 0 30px #ff0000,
+    3px 3px 6px rgba(0,0,0,0.9);
+  pointer-events: none;
+  z-index: 9999;
+  animation: floatUpDamage 2s ease-out forwards;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  letter-spacing: 2px;
+}
+
+@keyframes floatUpDamage {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  15% {
+    transform: translateY(-20px) scale(1.3) rotate(-5deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(-40px) scale(1.4) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-180px) scale(1.8) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+/* Notificación de combate central */
+.notificacion-combate {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,20,0.95) 100%);
+  border: 4px solid;
+  border-radius: 25px;
+  padding: 35px 60px;
+  z-index: 10000;
+  text-align: center;
+  min-width: 450px;
+  box-shadow: 0 15px 60px rgba(0,0,0,0.9);
+  animation: notificacionEntrada 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes notificacionEntrada {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(5deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Tipos de notificación con diferentes colores */
+.notificacion-combate.ataque {
+  border-color: #ff3333;
+  box-shadow: 
+    0 0 40px rgba(255,51,51,0.8), 
+    0 15px 60px rgba(0,0,0,0.9),
+    inset 0 0 30px rgba(255,51,51,0.2);
+  animation: notificacionEntrada 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+             pulseRed 1.5s ease-in-out infinite;
+}
+
+.notificacion-combate.defensa {
+  border-color: #3366ff;
+  box-shadow: 
+    0 0 40px rgba(51,102,255,0.8), 
+    0 15px 60px rgba(0,0,0,0.9),
+    inset 0 0 30px rgba(51,102,255,0.2);
+  animation: notificacionEntrada 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+             pulseBlue 1.5s ease-in-out infinite;
+}
+
+.notificacion-combate.esquiva {
+  border-color: #33ff33;
+  box-shadow: 
+    0 0 40px rgba(51,255,51,0.8), 
+    0 15px 60px rgba(0,0,0,0.9),
+    inset 0 0 30px rgba(51,255,51,0.2);
+  animation: notificacionEntrada 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+             pulseGreen 1.5s ease-in-out infinite;
+}
+
+.notificacion-combate.golpe {
+  border-color: #ff8800;
+  box-shadow: 
+    0 0 40px rgba(255,136,0,0.8), 
+    0 15px 60px rgba(0,0,0,0.9),
+    inset 0 0 30px rgba(255,136,0,0.2);
+  animation: notificacionEntrada 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+             pulseOrange 1.5s ease-in-out infinite;
+}
+
+/* Pulsos de colores */
+@keyframes pulseRed {
+  0%, 100% {
+    box-shadow: 
+      0 0 40px rgba(255,51,51,0.8), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 30px rgba(255,51,51,0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 60px rgba(255,51,51,1), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 40px rgba(255,51,51,0.4);
+  }
+}
+
+@keyframes pulseBlue {
+  0%, 100% {
+    box-shadow: 
+      0 0 40px rgba(51,102,255,0.8), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 30px rgba(51,102,255,0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 60px rgba(51,102,255,1), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 40px rgba(51,102,255,0.4);
+  }
+}
+
+@keyframes pulseGreen {
+  0%, 100% {
+    box-shadow: 
+      0 0 40px rgba(51,255,51,0.8), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 30px rgba(51,255,51,0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 60px rgba(51,255,51,1), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 40px rgba(51,255,51,0.4);
+  }
+}
+
+@keyframes pulseOrange {
+  0%, 100% {
+    box-shadow: 
+      0 0 40px rgba(255,136,0,0.8), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 30px rgba(255,136,0,0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 60px rgba(255,136,0,1), 
+      0 15px 60px rgba(0,0,0,0.9),
+      inset 0 0 40px rgba(255,136,0,0.4);
+  }
+}
+
+/* Mensaje de la notificación */
+.notificacion-mensaje {
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 
+    2px 2px 4px rgba(0,0,0,0.9),
+    0 0 20px rgba(255,255,255,0.5);
+  white-space: pre-line;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Modal de error de energía */
 .modalERROR {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.95), rgba(0, 0, 0, 0.95));
   color: white;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 25px 30px;
+  border-radius: 15px;
+  border: 3px solid #ff4444;
   font-size: 20px;
-  z-index: 1000;
+  z-index: 10000;
   text-align: center;
-  width: 300px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  min-width: 320px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(255, 68, 68, 0.5);
+  animation: modalErrorShake 0.5s ease-in-out;
 }
 
-/* Barra de carga debajo del modal */
+@keyframes modalErrorShake {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+  25% { transform: translate(-50%, -50%) rotate(-3deg); }
+  75% { transform: translate(-50%, -50%) rotate(3deg); }
+}
+
+.modalERROR p {
+  margin: 0 0 15px 0;
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Barra de carga */
 .bar-container {
   width: 100%;
-  height: 10px;
-  background-color: #444;
-  border-radius: 5px;
+  height: 12px;
+  background-color: rgba(68, 68, 68, 0.8);
+  border-radius: 6px;
   margin-top: 15px;
   position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .bar {
   height: 100%;
-  background-color: #00ffaa; /* Verde */
-  border-radius: 5px;
-  transition: width 0.1s linear; /* Animación más rápida con un intervalo menor */
+  background: linear-gradient(90deg, #ff4444 0%, #ff8888 50%, #ff4444 100%);
+  border-radius: 6px;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+  animation: barGlow 1s ease-in-out infinite;
+}
+
+@keyframes barGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 68, 68, 1);
+  }
 }
 
 /* Animación de glow */

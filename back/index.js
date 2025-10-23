@@ -322,7 +322,8 @@ io.on("connection", (socket) => {
             idUsuario: data.idUsuario,
             numeroTurno: data.numeroTurno,
             daño: data.daño,
-            nombreHabilidad: data.nombreHabilidad
+            nombreHabilidad: data.nombreHabilidad,
+            esquiva:data.esquiva
         });
 
         console.log(`📤 Cambio en la sala ${session.room}`, data);
