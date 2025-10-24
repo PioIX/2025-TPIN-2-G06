@@ -25,7 +25,7 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({});
-  
+  const [chequeoGandor, setChequeoGanador] = useState(false) 
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState("");
@@ -84,8 +84,10 @@ export default function Home() {
       console.log(data.idUsuario);
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste");
+        setChequeoGanador(true)
       } else {
         console.log("Perdiste");
+        setChequeoGanador(true)
       }
     });
   }, [socket]);
@@ -193,11 +195,11 @@ export default function Home() {
         }));
         setMensajeError(null);
         setEmpieza(false);
-        socket.emit("cambiarTurno", { 
-          idUsuario: idUsuario, 
-          numeroTurno: numeroTurno, 
-          daño: event.ataque.daño, 
-          nombreHabilidad: event.ataque.nombre 
+        socket.emit("cambiarTurno", {
+          idUsuario: idUsuario,
+          numeroTurno: numeroTurno,
+          daño: event.ataque.daño,
+          nombreHabilidad: event.ataque.nombre
         });
       } else {
         setMensajeError("No tienes suficiente energía.");
@@ -222,26 +224,26 @@ export default function Home() {
     } else if (event.defensa == true) {
       const probabilidadAleatoria = Math.floor(Math.random() * 100) + 1;
       console.log(`Probabilidad Aleatoria Defensa: ${probabilidadAleatoria}`);
-      
+
       setHabElegida({
         daño: 0,
         nombreHabilidad: "Defensa",
         esquiva: probabilidadAleatoria
       });
-      
+
       setEmpieza(false);
-      
+
       setPersonaje(prevPersonaje => ({
         ...prevPersonaje,
         energiaActual: prevPersonaje.energiaActual + 20,
       }));
-      
-      socket.emit("cambiarTurno", { 
-        idUsuario: idUsuario, 
-        numeroTurno: numeroTurno, 
-        daño: 0, 
-        nombreHabilidad: "Defensa", 
-        esquiva: probabilidadAleatoria 
+
+      socket.emit("cambiarTurno", {
+        idUsuario: idUsuario,
+        numeroTurno: numeroTurno,
+        daño: 0,
+        nombreHabilidad: "Defensa",
+        esquiva: probabilidadAleatoria
       });
     }
   }
@@ -253,9 +255,9 @@ export default function Home() {
       daño: Math.round(daño),
       esRival
     };
-    
+
     setNumerosFlotantes(prev => [...prev, nuevo]);
-    
+
     setTimeout(() => {
       setNumerosFlotantes(prev => prev.filter(n => n.id !== id));
     }, 2000);
@@ -274,7 +276,7 @@ export default function Home() {
   function restarVida(accionRival) {
     const dañoRivalRecibido = accionRival.daño;
     const esquivaRival = accionRival.esquiva;
-    
+
     let dañoAplicadoARival = 0;
     let dañoAplicadoAMi = 0;
     let mensaje = "";
@@ -306,7 +308,7 @@ export default function Home() {
       console.log("Yo ataco, rival defiende");
       console.log("Esquiva rival:", esquivaRival);
       console.log("Mi velocidad:", personajeRival.velocidad);
-      
+
       // El rival esquiva si su número aleatorio es menor o igual a mi velocidad
       if (esquivaRival !== null && esquivaRival <= personajeRival.velocidad) {
         console.log("El rival esquivó mi ataque");
@@ -326,7 +328,7 @@ export default function Home() {
       console.log("Rival ataca, yo defiendo");
       console.log("Mi esquiva:", habElegida.esquiva);
       console.log("Velocidad del personaje:", personaje.velocidad);
-      
+
       // Yo esquivo si mi número aleatorio es menor o igual a mi velocidad
       if (habElegida.esquiva !== null && habElegida.esquiva <= personaje.velocidad) {
         console.log("Yo esquivé el ataque");
@@ -361,21 +363,23 @@ export default function Home() {
     // Aplicar daño
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
-      saludActual: prevPersonaje.saludActual - dañoAplicadoAMi,
+      saludActual: Math.round(prevPersonaje.saludActual - dañoAplicadoAMi),
     }));
 
     setPersonajeRival(prevPersonajeRival => ({
       ...prevPersonajeRival,
-      saludActual: prevPersonajeRival.saludActual - dañoAplicadoARival,
+      saludActual: Math.round(prevPersonajeRival.saludActual - dañoAplicadoARival),
     }));
+
 
     // Mostrar notificación
     mostrarNotificacionCombate(mensaje, tipo);
   }
 
-  return (
-    <main className="contenedor">
-      {personaje && personajeRival ? (
+return (
+  <main className="contenedor">
+    {personaje && personajeRival ? (
+      !chequeoGandor ? (
         <div>
           <div className={flashRojo.yo ? 'flash-rojo' : ''}>
             <Personaje
@@ -423,28 +427,30 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div className={styles.roomInfoContainer}>
-          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
-          <p>Cargando personaje...</p>
-        </div>
-      )}
+        <p>Esperando resultado...</p> // Agrega el mensaje que quieras aquí
+      )
+    ) : (
+      <div className={styles.roomInfoContainer}>
+        <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+        <p>Cargando personaje...</p>
+      </div>
+    )}
 
-      {/* Modal de Energía Insuficiente */}
-      {mensajeError && mostrarModal && (
-        <div className="modalERROR">
-          <p>{mensajeError}</p>
-          <div className="bar-container">
-            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
-          </div>
+    {/* Modal de Energía Insuficiente */}
+    {mensajeError && mostrarModal && (
+      <div className="modalERROR">
+        <p>{mensajeError}</p>
+        <div className="bar-container">
+          <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* Notificación de Combate */}
-      {mostrarNotificacion && (
-        <div className={`notificacion-combate ${tipoNotificacion}`}>
-          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
-        </div>
-      )}
-    </main>
-  );
-}
+    {/* Notificación de Combate */}
+    {mostrarNotificacion && (
+      <div className={`notificacion-combate ${tipoNotificacion}`}>
+        <div className="notificacion-mensaje">{mensajeNotificacion}</div>
+      </div>
+    )}
+  </main>
+)}
