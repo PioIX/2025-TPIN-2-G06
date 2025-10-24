@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Personaje from "@/components/Personaje";
 import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
+import { useRouter } from "next/navigation";
+
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -27,7 +29,8 @@ export default function Home() {
   const [dataRival, setDataRival] = useState({});
   const [yoEsquivo, setYoesquivo] = useState(false);
   const [otroEsquiva, setOtroesquiva] = useState(false);
-  
+  const router = useRouter();
+
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState("");
@@ -39,7 +42,7 @@ export default function Home() {
     if (!socket) return;
     if (!idRoom) return;
 
-    socket.emit("joinRoom", { room: idRoom });
+    socket.emit("joinRoom", { room: idRoom, userId: idUsuario }); // Agregar userId
     let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
@@ -93,7 +96,51 @@ export default function Home() {
         console.log("Perdiste");
       }
     });
-  }, [socket]);
+
+    // NUEVO: Escuchar cuando un jugador abandona
+    socket.on("jugadorAbandonoPartida", (data) => {
+      console.log("⚠️ Jugador abandonó:", data);
+      alert(data.mensaje);
+      router.replace("/menuGeneral");
+    });
+
+    // Limpiar listeners al desmontar
+    return () => {
+      socket.off("newMessage");
+      socket.off("validarCambioTurno");
+      socket.off("avisito");
+      socket.off("ganadorAviso");
+      socket.off("jugadorAbandonoPartida");
+    };
+
+  }, [socket, idRoom, idUsuario]); // Agregar idUsuario a dependencias
+
+  // Manejar cierre de ventana/pestaña/recarga
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (socket && idUsuario) {
+        // Usar sendBeacon para garantizar que se envíe incluso al cerrar
+        socket.emit("disconnectJugador", { idUsuario });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && socket && idUsuario) {
+        socket.emit("disconnectJugador", { idUsuario });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [socket, idUsuario]);
+
+  // Eliminar el useEffect que tenías con "disconnectJugador" 
+  // porque ahora lo manejamos con el evento del backend
 
   useEffect(() => {
     console.log(habRival);
@@ -233,7 +280,7 @@ export default function Home() {
           ...prevPersonaje,
           energiaActual: prevPersonaje.energiaActual + 20,
         }));
-      } else { 
+      } else {
         setYoesquivo(false);
       }
       socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: 0, nombreHabilidad: "Defensa", esquiva: probabilidadAleatoria });
@@ -247,9 +294,9 @@ export default function Home() {
       daño: Math.round(daño),
       esRival
     };
-    
+
     setNumerosFlotantes(prev => [...prev, nuevo]);
-    
+
     setTimeout(() => {
       setNumerosFlotantes(prev => prev.filter(n => n.id !== id));
     }, 2000);

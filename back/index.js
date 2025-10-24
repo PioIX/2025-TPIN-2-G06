@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { realizarQuery } = require('./modulos/mysql');
 const session = require('express-session');
+const salaJugadores = new Map(); // Para trackear jugadores por sala
+
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -72,14 +74,14 @@ app.post('/usuariosRegistro', async (req, res) => {
 });
 
 // OBTENER PERSONAJES
-app.get('/obtenerPersonajes', async function(req,res){
+app.get('/obtenerPersonajes', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Personajes")
     res.send(respuesta);
 })
 
 // OBTENER MAPAS
-app.get('/obtenerMapas', async function(req,res){
+app.get('/obtenerMapas', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Mapas")
     res.send(respuesta);
@@ -290,65 +292,152 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-    console.log("🔌 Nuevo cliente conectado");
+    console.log("🔌 Nuevo cliente conectado:", socket.id);
     const req = socket.request;
+    
     socket.on("joinRoom", (data) => {
         console.log("🚀 ~ io.on ~ req.session.room:", req.session.room);
-        if (req.session.room != undefined && req.session.room.length > 0)
+        
+        // Salir de la room anterior si existe
+        if (req.session.room != undefined && req.session.room.length > 0) {
             socket.leave(req.session.room);
+            // Remover de tracking
+            if (salaJugadores.has(req.session.room)) {
+                const jugadores = salaJugadores.get(req.session.room);
+                const index = jugadores.findIndex(j => j.socketId === socket.id);
+                if (index > -1) jugadores.splice(index, 1);
+            }
+        }
+        
         req.session.room = data.room;
+        req.session.userId = data.userId; // Guardar userId en sesión
         socket.join(req.session.room);
-        console.log("Te has unido a la room", req.session.room)
+        
+        // Agregar al tracking
+        if (!salaJugadores.has(data.room)) {
+            salaJugadores.set(data.room, []);
+        }
+        salaJugadores.get(data.room).push({
+            socketId: socket.id,
+            userId: data.userId
+        });
+        
+        console.log("Te has unido a la room", req.session.room);
+        console.log("Jugadores en sala:", salaJugadores.get(data.room));
     });
-
 
     socket.on("sendMessage", (data) => {
         const session = socket.request.session;
-
         io.to(session.room).emit("newMessage", {
             room: session.room,
             validar: data.validar,
             userId: data.userId,
         });
-
         console.log(`📤 Mensaje enviado a sala ${session.room}`, data);
     });
 
     socket.on("cambiarTurno", (data) => {
         const session = socket.request.session;
-
         io.to(session.room).emit("validarCambioTurno", {
             check: true,
             idUsuario: data.idUsuario,
             numeroTurno: data.numeroTurno,
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad,
-            esquiva:data.esquiva
+            esquiva: data.esquiva
         });
-
         console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
 
-
     socket.on("avisar", (data) => {
         const session = socket.request.session;
-
         io.to(session.room).emit("avisito", {
             idUsuario: data.data,
         });
-
         console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
 
     socket.on("ganador", (data) => {
         const session = socket.request.session;
-        console.log(data.idUsuario)
+        console.log(data.idUsuario);
         io.to(session.room).emit("ganadorAviso", {
             idUsuario: data.idUsuario,
         });
     });
 
-    socket.on("disconnect", () => {
-        console.log("❌ Cliente desconectado");
+    // Manejar desconexión manual del jugador
+    socket.on("disconnectJugador", ({ idUsuario }) => {
+        const session = socket.request.session;
+        const room = session.room;
+        
+        console.log(`🚪 Jugador ${idUsuario} abandonó manualmente la sala ${room}`);
+        
+        if (room) {
+            // Notificar a TODOS en la sala que deben salir
+            io.to(room).emit("jugadorAbandonoPartida", { 
+                idUsuario,
+                mensaje: "Un jugador abandonó la partida" 
+            });
+            
+            // Limpiar tracking
+            if (salaJugadores.has(room)) {
+                salaJugadores.delete(room);
+            }
+            
+            // Marcar sala como inactiva en BD
+            marcarSalaInactiva(room);
+        }
+    });
+
+    // Manejar desconexión del socket (cierre de ventana, pérdida de conexión, etc)
+    socket.on("disconnect", (reason) => {
+        const session = socket.request.session;
+        const room = session.room;
+        const userId = session.userId;
+        
+        console.log(`❌ Cliente desconectado. Razón: ${reason}. Room: ${room}, User: ${userId}`);
+        
+        if (room) {
+            // Remover del tracking
+            if (salaJugadores.has(room)) {
+                const jugadores = salaJugadores.get(room);
+                const index = jugadores.findIndex(j => j.socketId === socket.id);
+                if (index > -1) {
+                    jugadores.splice(index, 1);
+                    console.log(`Jugador removido. Quedan ${jugadores.length} en sala ${room}`);
+                }
+                
+                // Si ya no hay jugadores o solo queda 1, cerrar la sala
+                if (jugadores.length <= 1) {
+                    console.log(`🔒 Cerrando sala ${room} - No hay suficientes jugadores`);
+                    
+                    // Notificar a cualquier jugador restante
+                    io.to(room).emit("jugadorAbandonoPartida", { 
+                        userId,
+                        mensaje: "Un jugador se desconectó" 
+                    });
+                    
+                    // Limpiar
+                    salaJugadores.delete(room);
+                    marcarSalaInactiva(room);
+                }
+            }
+        }
     });
 });
+
+// Función auxiliar para marcar sala como inactiva
+async function marcarSalaInactiva(roomId) {
+    try {
+        await realizarQuery(`
+            UPDATE Salas 
+            SET esta_activa = 0 
+            WHERE numero_room = ${roomId}
+        `);
+        console.log(`✅ Sala ${roomId} marcada como inactiva`);
+    } catch (error) {
+        console.error(`❌ Error al desactivar sala ${roomId}:`, error);
+    }
+}
+
+
