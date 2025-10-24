@@ -25,8 +25,6 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({});
-  const [yoEsquivo, setYoesquivo] = useState(false);
-  const [otroEsquiva, setOtroesquiva] = useState(false);
   
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
@@ -58,13 +56,10 @@ export default function Home() {
         if (data.daño != undefined && data.nombreHabilidad != undefined) {
           habRivalTemp = {
             daño: data.daño,
-            nombreHabilidad: data.nombreHabilidad
+            nombreHabilidad: data.nombreHabilidad,
+            esquiva: data.esquiva !== undefined ? data.esquiva : null
           };
           setHabRival(habRivalTemp);
-          if (data.esquiva != undefined) {
-            console.log(data.esquiva);
-            setOtroesquiva(data.esquiva);
-          }
         } else {
           console.error('Datos inválidos para habRival:', data);
         }
@@ -99,7 +94,7 @@ export default function Home() {
     console.log(habRival);
     if (avisitoFlag) {
       if (habRival != undefined) {
-        restarVida(habRival.daño);
+        restarVida(habRival);
       } else {
         console.log("No encuentra habilidad rival");
       }
@@ -110,7 +105,7 @@ export default function Home() {
   useEffect(() => {
     if (personajesFlag) {
       if (personaje != undefined && personajeRival != undefined) {
-        restarVida(dataRival.daño);
+        restarVida(dataRival);
       } else {
         console.log("No encuentra habilidad rival");
       }
@@ -198,7 +193,12 @@ export default function Home() {
         }));
         setMensajeError(null);
         setEmpieza(false);
-        socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: event.ataque.daño, nombreHabilidad: event.ataque.nombre });
+        socket.emit("cambiarTurno", { 
+          idUsuario: idUsuario, 
+          numeroTurno: numeroTurno, 
+          daño: event.ataque.daño, 
+          nombreHabilidad: event.ataque.nombre 
+        });
       } else {
         setMensajeError("No tienes suficiente energía.");
         setMostrarModal(true);
@@ -220,23 +220,29 @@ export default function Home() {
         }, 2000);
       }
     } else if (event.defensa == true) {
+      const probabilidadAleatoria = Math.floor(Math.random() * 100) + 1;
+      console.log(`Probabilidad Aleatoria Defensa: ${probabilidadAleatoria}`);
+      
       setHabElegida({
         daño: 0,
-        nombreHabilidad: "Defensa"
+        nombreHabilidad: "Defensa",
+        esquiva: probabilidadAleatoria
       });
+      
       setEmpieza(false);
-      const probabilidadAleatoria = Math.floor(Math.random() * 100) + 1;
-      console.log(`Probabilidad Aleatoria: ${probabilidadAleatoria}`);
-      if (probabilidadAleatoria <= personajeRival.velocidad) {
-        setYoesquivo(true);
-        setPersonaje(prevPersonaje => ({
-          ...prevPersonaje,
-          energiaActual: prevPersonaje.energiaActual + 20,
-        }));
-      } else { 
-        setYoesquivo(false);
-      }
-      socket.emit("cambiarTurno", { idUsuario: idUsuario, numeroTurno: numeroTurno, daño: 0, nombreHabilidad: "Defensa", esquiva: probabilidadAleatoria });
+      
+      setPersonaje(prevPersonaje => ({
+        ...prevPersonaje,
+        energiaActual: prevPersonaje.energiaActual + 20,
+      }));
+      
+      socket.emit("cambiarTurno", { 
+        idUsuario: idUsuario, 
+        numeroTurno: numeroTurno, 
+        daño: 0, 
+        nombreHabilidad: "Defensa", 
+        esquiva: probabilidadAleatoria 
+      });
     }
   }
 
@@ -262,28 +268,32 @@ export default function Home() {
 
     setTimeout(() => {
       setMostrarNotificacion(false);
-    }, 3500);
+    }, 2000);
   }
 
-  function restarVida(daño) {
-    let dañoRival = 0;
-    let dañoPersonaje = daño;
+  function restarVida(accionRival) {
+    const dañoRivalRecibido = accionRival.daño;
+    const esquivaRival = accionRival.esquiva;
+    
+    let dañoAplicadoARival = 0;
+    let dañoAplicadoAMi = 0;
     let mensaje = "";
     let tipo = "";
 
-    console.log(personaje.fuerza);
-    console.log(personajeRival.fuerza);
+    console.log("=== INICIO CÁLCULO DAÑO ===");
+    console.log("Acción Rival:", accionRival);
+    console.log("Acción Mía (habElegida):", habElegida);
 
     // Ambos atacan
-    if (daño > 0 && habElegida.daño > 0) {
-      daño = daño * personaje.fuerza / 100 * 0.75;
-      dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+    if (dañoRivalRecibido > 0 && habElegida.daño > 0) {
+      dañoAplicadoAMi = dañoRivalRecibido * personaje.fuerza / 100 * 0.75;
+      dañoAplicadoARival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
       mensaje = `⚔️ ¡Intercambio de golpes!`;
       tipo = "ataque";
     }
 
     // Ambos defienden
-    if (daño === 0 && habElegida.daño === 0) {
+    else if (dañoRivalRecibido === 0 && habElegida.daño === 0) {
       console.log("Ambos personajes han defendido, no reciben daño");
       mensaje = "🛡️ ¡Ambos se defienden!\nNinguno recibe daño";
       tipo = "defensa";
@@ -291,58 +301,72 @@ export default function Home() {
       return;
     }
 
-    // Rival defiende, yo ataco
-    if (daño === 0 && habElegida.daño > 0) {
-      if (yoEsquivo) {
-        console.log("El rival defendió y esquivó");
-        dañoRival = 0;
-        mensaje = `🛡️ ¡${personajeRival.nombre} esquivó!`;
+    // Yo ataco, rival defiende
+    else if (dañoRivalRecibido === 0 && habElegida.daño > 0) {
+      console.log("Yo ataco, rival defiende");
+      console.log("Esquiva rival:", esquivaRival);
+      console.log("Mi velocidad:", personajeRival.velocidad);
+      
+      // El rival esquiva si su número aleatorio es menor o igual a mi velocidad
+      if (esquivaRival !== null && esquivaRival <= personajeRival.velocidad) {
+        console.log("El rival esquivó mi ataque");
+        dañoAplicadoARival = 0;
+        mensaje = `🛡️ ¡${personajeRival.nombre} esquivó tu ataque!`;
         tipo = "esquiva";
       } else {
-        console.log("El rival no defendió");
-        dañoRival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
-        mensaje = `⚔️ ¡Haz impactado con tu ataque`;
+        console.log("El rival no esquivó, recibe daño");
+        dañoAplicadoARival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+        mensaje = `⚔️ ¡Has impactado tu ataque!`;
         tipo = "ataque";
       }
     }
 
-    // Yo defiendo, rival ataca
-    if (daño > 0 && habElegida.daño === 0) {
-      if (otroEsquiva) {
-        console.log("Yo defendí y esquivé");
-        daño = 0;
-        mensaje = `🛡️ ¡Esquivaste!\n${habRival.nombreHabilidad} no te alcanzó`;
+    // Rival ataca, yo defiendo
+    else if (dañoRivalRecibido > 0 && habElegida.daño === 0) {
+      console.log("Rival ataca, yo defiendo");
+      console.log("Mi esquiva:", habElegida.esquiva);
+      console.log("Velocidad del personaje:", personaje.velocidad);
+      
+      // Yo esquivo si mi número aleatorio es menor o igual a mi velocidad
+      if (habElegida.esquiva !== null && habElegida.esquiva <= personaje.velocidad) {
+        console.log("Yo esquivé el ataque");
+        dañoAplicadoAMi = 0;
+        mensaje = `🛡️ ¡Esquivaste!\n${accionRival.nombreHabilidad} no te alcanzó`;
         tipo = "esquiva";
       } else {
-        console.log("No defendí");
-        daño = daño * personaje.fuerza / 100 * 0.75;
-        mensaje = `💥 ¡Te golpearon con ${habRival.nombreHabilidad}!\nNo pudiste esquivar`;
+        console.log("No esquivé, recibo daño");
+        dañoAplicadoAMi = dañoRivalRecibido * personaje.fuerza / 100 * 0.75;
+        mensaje = `💥 ¡Te golpearon con ${accionRival.nombreHabilidad}!\nNo pudiste esquivar`;
         tipo = "golpe";
       }
     }
 
+    console.log("Daño aplicado a mí:", dañoAplicadoAMi);
+    console.log("Daño aplicado al rival:", dañoAplicadoARival);
+    console.log("=== FIN CÁLCULO DAÑO ===");
+
     // Aplicar efectos visuales
-    if (daño > 0) {
+    if (dañoAplicadoAMi > 0) {
       setFlashRojo(prev => ({ ...prev, yo: true }));
-      agregarNumeroFlotante(daño, false);
+      agregarNumeroFlotante(dañoAplicadoAMi, false);
       setTimeout(() => setFlashRojo(prev => ({ ...prev, yo: false })), 500);
     }
 
-    if (dañoRival > 0) {
+    if (dañoAplicadoARival > 0) {
       setFlashRojo(prev => ({ ...prev, rival: true }));
-      agregarNumeroFlotante(dañoRival, true);
+      agregarNumeroFlotante(dañoAplicadoARival, true);
       setTimeout(() => setFlashRojo(prev => ({ ...prev, rival: false })), 500);
     }
 
     // Aplicar daño
     setPersonaje(prevPersonaje => ({
       ...prevPersonaje,
-      saludActual: prevPersonaje.saludActual - daño,
+      saludActual: prevPersonaje.saludActual - dañoAplicadoAMi,
     }));
 
     setPersonajeRival(prevPersonajeRival => ({
       ...prevPersonajeRival,
-      saludActual: prevPersonajeRival.saludActual - dañoRival,
+      saludActual: prevPersonajeRival.saludActual - dañoAplicadoARival,
     }));
 
     // Mostrar notificación
@@ -350,7 +374,7 @@ export default function Home() {
   }
 
   return (
-    <main className="contenedor">``
+    <main className="contenedor">
       {personaje && personajeRival ? (
         <div>
           <div className={flashRojo.yo ? 'flash-rojo' : ''}>
