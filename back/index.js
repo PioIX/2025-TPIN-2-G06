@@ -349,6 +349,17 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-        console.log("❌ Cliente desconectado");
+        const room = req.session.room;
+        console.log(`❌ Cliente desconectado de la sala ${room}`);
+
+        if (room) {
+            // Avisar a todos los jugadores que la partida fue cancelada
+            io.to(room).emit("partidaCancelada", {
+                motivo: "Un jugador abandonó la partida",
+            });
+
+            // Dejar la sala para limpiar
+            socket.leave(room);
+        }
     });
 });

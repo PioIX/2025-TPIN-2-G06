@@ -29,3 +29,9 @@
   color: #a78bfa;
   font-weight: 600;
 }
+
+.volver {
+  opacity: 0.85;
+  animation: fadeIn 1s ease-out;
+  z-index: 1;
+}

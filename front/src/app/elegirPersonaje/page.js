@@ -38,6 +38,10 @@ export default function ElegirPersonaje() {
     setMostrarModal(false);
     setPersonajeSeleccionado(null);
   };
+  
+  function volverAlMenu() {
+    router.push(`/menuGeneral?idUsuario=${idUsuario}`);
+  }
 
   const manejarElegir = () => {
     router.push(`/crearPartida?idUsuario=${idUsuario}&personaje=${personajeSeleccionado.idPersonaje}`);
@@ -57,6 +61,9 @@ export default function ElegirPersonaje() {
           />
         ))}
       </div>
+      <div className={styles.volverMenuGeneral}>
+        <Button text="Volver" onClick={volverAlMenu} />
+      </div>
 
       {mostrarModal && personajeSeleccionado && (
         <div className={styles.modalOverlay}>
@@ -70,5 +77,6 @@ export default function ElegirPersonaje() {
         </div>
       )}
     </div>
+    
   );
 }
