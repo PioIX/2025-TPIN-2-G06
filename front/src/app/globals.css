@@ -575,3 +575,92 @@ input:focus {
     box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
   }
 }
+
+/* Estilo general para el contenedor de resultados */
+.resultado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.6s ease-out;
+  position: relative;
+}
+
+/* Estilo para el ganador (verde neón) */
+.gane {
+  background: #4caf50;
+  color: #fff;
+  box-shadow: 0 0 20px 5px #4caf50, 0 0 30px 10px #4caf50, 0 0 50px 15px #4caf50;
+  text-shadow: 0 0 5px #4caf50, 0 0 10px #4caf50, 0 0 15px #4caf50;
+  animation: neonPulse 1.5s infinite ease-in-out;
+}
+
+/* Estilo para el perdedor (rojo neón) */
+.perdiste {
+  background: #f44336;
+  color: #fff;
+  box-shadow: 0 0 20px 5px #f44336, 0 0 30px 10px #f44336, 0 0 50px 15px #f44336;
+  text-shadow: 0 0 5px #f44336, 0 0 10px #f44336, 0 0 15px #f44336;
+  animation: neonShake 0.5s ease-in-out, neonPulse 1.5s infinite ease-in-out;
+}
+
+/* Estilo para empate (naranja neón) */
+.empate {
+  background: #ffa500;
+  color: #fff;
+  box-shadow: 0 0 20px 5px #ffa500, 0 0 30px 10px #ffa500, 0 0 50px 15px #ffa500;
+  text-shadow: 0 0 5px #ffa500, 0 0 10px #ffa500, 0 0 15px #ffa500;
+  animation: neonPulse 1.5s infinite ease-in-out;
+}
+
+/* Animación de parpadeo y pulso neón */
+@keyframes neonPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8), 0 0 30px 10px rgba(255, 255, 255, 0.6), 0 0 50px 15px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px 10px rgba(255, 255, 255, 1), 0 0 30px 20px rgba(255, 255, 255, 0.8), 0 0 50px 30px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8), 0 0 30px 10px rgba(255, 255, 255, 0.6), 0 0 50px 15px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Animación de sacudida para "perdiste" */
+@keyframes neonShake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Animación de fadeIn para aparecer */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
