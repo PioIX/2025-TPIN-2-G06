@@ -8,6 +8,8 @@ import { useSocket } from "@/hooks/useSocket";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import clsx from 'clsx';
+import Confetti from "react-confetti"; // Librería de confeti
+import Fireworks from "fireworks-js"; // Librería para fuegos artificiales
 
 
 
@@ -441,26 +443,40 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className={clsx("resultado", {
-            "gane": ganador === "gane",
-            "perdiste": ganador === "perdiste",
-            "empate": ganador === "empate"
-          })}>
+          <div
+            className={clsx("resultado", {
+              gane: ganador === "gane",
+              perdiste: ganador === "perdiste",
+              empate: ganador === "empate",
+            })}
+          >
+            <div id="fireworks-container" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}></div>
+
+            <Confetti
+              width={window.innerWidth}
+              height={window.innerHeight}
+              numberOfPieces={250} // Ajustar la cantidad de confeti
+              gravity={0.2} // Gravedad de caída
+              recycle={false} // No reciclar el confeti
+            />
+
             {ganador === "gane" && (
               <div>
-                <p>Victoria Royal</p>
+                <img src={"/images/corona.png"} className={"corona-container"}/>
+                <img src={personaje.fotoPersonaje} alt={personaje.fotoPersonaje} className={"imagenGanador"} />
+                <p className="victoria-text">¡Ganaste!</p>
                 <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
               </div>
             )}
             {ganador === "perdiste" && (
               <div>
-                <p>Tenes el culo roto</p>
+                <p className="derrota-text">¡Perdiste!</p>
                 <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
               </div>
             )}
             {ganador === "empate" && (
               <div>
-                <p>Han empatado</p>
+                <p>¡Han empatado!</p>
                 <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
               </div>
             )}
