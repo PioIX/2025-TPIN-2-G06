@@ -375,7 +375,9 @@ export default function Home() {
       setMostrarNotificacion(false);
     }, 2000);
   }
-
+  function volverAlMenu(){
+    router.replace(`/menuGeneral?idUsuario=${idUsuario}`)
+  }
   function restarVida(accionRival) {
     const dañoRivalRecibido = accionRival.daño;
     const esquivaRival = accionRival.esquiva;
@@ -490,6 +492,9 @@ export default function Home() {
 
   return (
     <main className="contenedor">
+      <div className={styles.volverMenuGeneral}>
+        <Button text="Volver" onClick={volverAlMenu} />
+      </div>
       {personaje && personajeRival ? (
         !chequeoGandor ? (
           <div>
