@@ -72,14 +72,14 @@ app.post('/usuariosRegistro', async (req, res) => {
 });
 
 // OBTENER PERSONAJES
-app.get('/obtenerPersonajes', async function(req,res){
+app.get('/obtenerPersonajes', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Personajes")
     res.send(respuesta);
 })
 
 // OBTENER MAPAS
-app.get('/obtenerMapas', async function(req,res){
+app.get('/obtenerMapas', async function (req, res) {
     let respuesta;
     respuesta = await realizarQuery("SELECT * FROM Mapas")
     res.send(respuesta);
@@ -273,6 +273,9 @@ app.post('/entrarPartida', async function (req, res) {
 // ===============================
 // SOCKET.IO CONFIG
 // ===============================
+// ===============================
+// SOCKET.IO CONFIG
+// ===============================
 const server = app.listen(port, () => {
     console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
 });
@@ -289,18 +292,36 @@ io.use((socket, next) => {
     sessionMiddleware(socket.request, {}, next);
 });
 
+// Map para trackear jugadores EN PARTIDA
+const jugadoresEnPartida = new Map(); // key: socketId, value: { room, idUsuario }
+
 io.on("connection", (socket) => {
-    console.log("🔌 Nuevo cliente conectado");
+    console.log("🔌 Nuevo cliente conectado:", socket.id);
     const req = socket.request;
+
     socket.on("joinRoom", (data) => {
         console.log("🚀 ~ io.on ~ req.session.room:", req.session.room);
         if (req.session.room != undefined && req.session.room.length > 0)
             socket.leave(req.session.room);
         req.session.room = data.room;
         socket.join(req.session.room);
-        console.log("Te has unido a la room", req.session.room)
+        console.log("Te has unido a la room", req.session.room);
     });
 
+    // NUEVO: Registrar que un jugador está activamente EN LA PARTIDA
+    socket.on("registrarEnPartida", (data) => {
+        const { room, idUsuario } = data;
+        jugadoresEnPartida.set(socket.id, { room, idUsuario });
+        console.log(`✅ Jugador ${idUsuario} registrado en partida (sala ${room})`);
+        console.log("Jugadores activos en partida:", jugadoresEnPartida.size);
+    });
+
+    // NUEVO: Cuando el jugador sale de la página de juego normalmente
+    socket.on("salirDePartida", (data) => {
+        const { idUsuario } = data;
+        jugadoresEnPartida.delete(socket.id);
+        console.log(`👋 Jugador ${idUsuario} salió normalmente de la partida`);
+    });
 
     socket.on("sendMessage", (data) => {
         const session = socket.request.session;
@@ -323,12 +344,11 @@ io.on("connection", (socket) => {
             numeroTurno: data.numeroTurno,
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad,
-            esquiva:data.esquiva
+            esquiva: data.esquiva
         });
 
         console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
-
 
     socket.on("avisar", (data) => {
         const session = socket.request.session;
@@ -342,7 +362,7 @@ io.on("connection", (socket) => {
 
     socket.on("ganador", (data) => {
         const session = socket.request.session;
-        console.log(data.idUsuario)
+        console.log(data.idUsuario);
         io.to(session.room).emit("ganadorAviso", {
             idUsuario: data.idUsuario,
         });
@@ -350,16 +370,48 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         const room = req.session.room;
-        console.log(`❌ Cliente desconectado de la sala ${room}`);
 
-        if (room) {
+        // SOLO cancelar partida si el jugador estaba registrado en partida
+        if (jugadoresEnPartida.has(socket.id)) {
+            const jugadorInfo = jugadoresEnPartida.get(socket.id);
+            console.log(`❌ Jugador ${jugadorInfo.idUsuario} desconectado DURANTE PARTIDA en sala ${jugadorInfo.room}`);
+
             // Avisar a todos los jugadores que la partida fue cancelada
-            io.to(room).emit("partidaCancelada", {
+            io.to(jugadorInfo.room).emit("partidaCancelada", {
                 motivo: "Un jugador abandonó la partida",
+                idUsuarioDesconectado: jugadorInfo.idUsuario
             });
 
-            // Dejar la sala para limpiar
-            socket.leave(room);
+            // Limpiar del map
+            jugadoresEnPartida.delete(socket.id);
+
+            // Dejar la sala
+            socket.leave(jugadorInfo.room);
+        } else {
+            console.log(`❌ Cliente desconectado (no estaba en partida)`);
         }
+    });
+
+    socket.on("avisar", (data) => {
+        const session = socket.request.session;
+
+        // Si es un aviso de abandono por recarga
+        if (data.tipo === "abandonoRecarga") {
+            console.log(`🔄 Jugador ${data.data} abandonó por recarga`);
+
+            // Avisar a todos en la sala que la partida fue cancelada
+            io.to(session.room).emit("partidaCancelada", {
+                motivo: "Un jugador recargó la página",
+                idUsuarioDesconectado: data.data
+            });
+
+            return;
+        }
+
+        io.to(session.room).emit("avisito", {
+            idUsuario: data.data,
+        });
+
+        console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
 });

@@ -38,9 +38,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!socket) return;
-    if (!idRoom) return;
+    if (!idRoom || !idUsuario) return;
 
     socket.emit("joinRoom", { room: idRoom });
+    
+    // REGISTRAR que estamos EN LA PARTIDA
+    socket.emit("registrarEnPartida", { room: idRoom, idUsuario: idUsuario });
+    
     let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
@@ -94,12 +98,99 @@ export default function Home() {
       }
     });
 
+    // ESCUCHAR cuando la partida es cancelada
     socket.on("partidaCancelada", (data) => {
       console.warn("❌ Partida cancelada:", data.motivo);
+      
+      // Marcar en localStorage que la partida fue cancelada
+      localStorage.setItem("partidaCancelada", "true");
+      
       alert("La partida fue cancelada porque el otro jugador se desconectó.");
+      
+      // Avisar al backend que salimos antes de redirigir
+      socket.emit("salirDePartida", { idUsuario });
+      
       router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
     });
+
+    // Cleanup al desmontar
+    return () => {
+      console.log("🧹 Limpiando listeners y saliendo de partida");
+      socket.off("newMessage");
+      socket.off("validarCambioTurno");
+      socket.off("avisito");
+      socket.off("ganadorAviso");
+      socket.off("partidaCancelada");
+      
+      // Avisar que salimos de la partida
+      socket.emit("salirDePartida", { idUsuario });
+    };
   }, [socket, idRoom, idUsuario, router]);
+
+  // NUEVO: Detectar recarga de página y redirigir
+  useEffect(() => {
+    // Verificar si venimos de una partida cancelada
+    const partidaCancelada = localStorage.getItem("partidaCancelada");
+    
+    if (partidaCancelada === "true") {
+      // Limpiar el flag
+      localStorage.removeItem("partidaCancelada");
+      
+      // Redirigir inmediatamente
+      alert("La partida fue cancelada");
+      router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
+      return;
+    }
+
+    // Marcar que estamos en partida
+    sessionStorage.setItem("enPartida", "true");
+    sessionStorage.setItem("roomActual", idRoom);
+    sessionStorage.setItem("usuarioActual", idUsuario);
+
+    // Detectar si es una recarga (performance.navigation.type === 1)
+    // o si hay datos en sessionStorage de una partida previa
+    const esRecarga = performance.navigation?.type === 1 || 
+                      performance.getEntriesByType?.("navigation")[0]?.type === "reload";
+
+    if (esRecarga) {
+      console.log("⚠️ Recarga detectada - Cancelando partida");
+      
+      if (socket && idUsuario && idRoom) {
+        // Emitir que abandonamos por recarga
+        socket.emit("salirDePartida", { idUsuario });
+        
+        // Notificar al otro jugador
+        socket.emit("avisar", { 
+          data: idUsuario, 
+          tipo: "abandonoRecarga" 
+        });
+      }
+      
+      alert("Has recargado la página. La partida fue cancelada.");
+      router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
+      return;
+    }
+
+    // Listener para detectar cuando el usuario intenta cerrar/recargar
+    const handleBeforeUnload = (e) => {
+      // Marcar en sessionStorage que se está saliendo
+      sessionStorage.setItem("partidaInterrumpida", "true");
+      
+      if (socket && idUsuario) {
+        // Intentar enviar señal (no siempre funciona en beforeunload)
+        socket.emit("salirDePartida", { idUsuario });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      sessionStorage.removeItem("enPartida");
+      sessionStorage.removeItem("roomActual");
+      sessionStorage.removeItem("usuarioActual");
+    };
+  }, [idRoom, idUsuario, socket, router]);
 
   useEffect(() => {
     console.log(habRival);
@@ -259,9 +350,7 @@ export default function Home() {
       });
     }
   }
-  function volverAlMenu() {
-    router.push(`/menuGeneral?idUsuario=${idUsuario}`);
-  }
+
   function agregarNumeroFlotante(daño, esRival) {
     const id = Date.now() + Math.random();
     const nuevo = {
@@ -399,15 +488,8 @@ export default function Home() {
     mostrarNotificacionCombate(mensaje, tipo);
   }
 
-  function volver() {
-    router.push(`/crearPartida?idUsuario=${idUsuario}`);
-  }
-
   return (
     <main className="contenedor">
-      <div className={styles.volverMenuGeneral}>
-        <Button text="Volver" onClick={volverAlMenu} />
-      </div>
       {personaje && personajeRival ? (
         !chequeoGandor ? (
           <div>
@@ -463,9 +545,6 @@ export default function Home() {
         <div className={styles.roomInfoContainer}>
           <p>El id de la sala es: {searchParams.get("idRoom")}</p>
           <p>Cargando personaje...</p>
-          <div className={styles.volver}>
-            <Button text="Volver" onClick={volver} />
-          </div>
         </div>
       )}
 
