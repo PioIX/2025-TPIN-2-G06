@@ -621,10 +621,11 @@ input:focus {
 /* ===================== */
 
 .resultado {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  display: flex; /* Usar flex para alinear los elementos */
+  flex-direction: column; /* Apilar los elementos verticalmente */
+  justify-content: center; /* Centrar verticalmente */
+  align-items: center; /* Centrar horizontalmente */
+  min-height: 100vh; /* Tomar al menos toda la altura de la ventana */
   font-size: 2rem;
   font-weight: 600;
   text-align: center;
@@ -635,16 +636,43 @@ input:focus {
   animation: fadeIn 0.6s ease-out;
 }
 
-.corona-container {
+.resultado div {
+  margin-bottom: 20px; /* Espacio entre los bloques de resultado */
+}
+
+.imagenGanador {
+  width: 20%; 
+  height: auto; /* Deja que la altura se ajuste automáticamente */
+  border-radius: 8px;
+  margin-top: 15px; /* Espacio arriba de la imagen */
+  object-fit: contain; /* Asegura que la imagen no se deforme y mantenga su aspecto */
+}
+
+.gane, .perdiste, .empate {
+  padding: 20px; /* Espacio interno adicional */
+  margin: 10px 0; /* Márgenes entre los bloques */
+  width: 100%; /* Asegura que el bloque ocupe todo el ancho disponible */
+}
+
+.victoria-text, .derrota-text {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 10px #4caf50, 0 0 20px #4caf50;
+}
+
+.fireworks {
   position: absolute;
   top: 10%;
   left: 50%;
   transform: translateX(-50%);
+  width: 100%;
+  z-index: 999;
 }
 
-.imagenGanador {
-  width: 60px; /* Tamaño más pequeño de la corona */
-  height: auto;
+.message {
+  position: relative;
+  z-index: 999;
 }
 
 .gane {
@@ -668,36 +696,9 @@ input:focus {
   text-shadow: 0 0 5px #ffa500, 0 0 10px #ffa500, 0 0 15px #ffa500;
 }
 
-.victoria-text {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 0 10px #4caf50, 0 0 20px #4caf50;
-}
-
-.fireworks {
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  z-index: 999;
-}
-
-.message {
-  position: relative;
-  z-index: 999;
-}
-
 .derrota-text {
   font-size: 3rem;
   font-weight: 700;
   color: #fff;
   text-shadow: 0 0 10px #ff0000, 0 0 20px #8a0000;
-}
-
-.imagenGanador {
-  width: 320px;
-  height: 400px;
-  border-radius: 8px;
 }
