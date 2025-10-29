@@ -40,6 +40,7 @@ export default function Home() {
   // NUEVO: Flag para saber si el juego ya empezó
   const [juegoIniciado, setJuegoIniciado] = useState(false);
   const registradoEnPartida = useRef(false);
+  const yaDetectoRecarga = useRef(false);
 
   // Extraer parámetros de URL
   useEffect(() => {
@@ -172,14 +173,28 @@ export default function Home() {
   // DETECTAR RECARGA - SOLO CUANDO EL JUEGO YA INICIÓ
   useEffect(() => {
     if (!juegoIniciado) return;
+    if (yaDetectoRecarga.current) return; // Evitar múltiples detecciones
 
-    const esRecarga = performance.navigation?.type === 1 || 
-                      performance.getEntriesByType?.("navigation")[0]?.type === "reload";
+    // Crear una key única para esta partida específica
+    const keyPartida = `partida_${idRoom}_${idUsuario}`;
+    
+    // Verificar si esta partida fue marcada como interrumpida
+    const partidaInterrumpida = sessionStorage.getItem(keyPartida);
 
-    if (esRecarga) {
+    if (partidaInterrumpida === "true") {
       console.log("⚠️ Recarga detectada durante el juego");
+      yaDetectoRecarga.current = true;
+      
+      // Limpiar el flag INMEDIATAMENTE
+      sessionStorage.removeItem(keyPartida);
       
       if (socket && idUsuario && idRoom && registradoEnPartida.current) {
+        // Notificar al backend para que avise a AMBOS jugadores
+        socket.emit("jugadorRecargo", { 
+          room: idRoom, 
+          idUsuario: idUsuario 
+        });
+        
         socket.emit("salirDePartida", { idUsuario });
         registradoEnPartida.current = false;
       }
@@ -189,10 +204,11 @@ export default function Home() {
       return;
     }
 
+    // Marcar esta partida en beforeunload
     const handleBeforeUnload = () => {
       if (socket && idUsuario && registradoEnPartida.current) {
-        socket.emit("salirDePartida", { idUsuario });
-        registradoEnPartida.current = false;
+        // Marcar SOLO esta partida específica
+        sessionStorage.setItem(keyPartida, "true");
       }
     };
 
@@ -200,6 +216,7 @@ export default function Home() {
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      // NO limpiar el sessionStorage aquí porque el componente se desmonta antes de la recarga
     };
   }, [juegoIniciado, socket, idRoom, idUsuario, router]);
 
@@ -369,6 +386,10 @@ export default function Home() {
   }
 
   function volverAlMenu() {
+    // Limpiar el flag de esta partida antes de salir
+    const keyPartida = `partida_${idRoom}_${idUsuario}`;
+    sessionStorage.removeItem(keyPartida);
+    
     // Desregistrar antes de salir normalmente
     if (registradoEnPartida.current && socket && idUsuario) {
       socket.emit("salirDePartida", { idUsuario });

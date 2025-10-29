@@ -414,4 +414,20 @@ io.on("connection", (socket) => {
 
         console.log(`📤 Cambio en la sala ${session.room}`, data);
     });
+
+    // Agregar este nuevo evento en el backend después de "salirDePartida"
+    socket.on("jugadorRecargo", (data) => {
+        const { room, idUsuario } = data;
+
+        console.log(`🔄 Jugador ${idUsuario} recargó la página en sala ${room}`);
+
+        // Avisar a TODOS en la sala (incluido el que recargó) que la partida fue cancelada
+        io.to(room).emit("partidaCancelada", {
+            motivo: "Un jugador recargó la página",
+            idUsuarioDesconectado: idUsuario
+        });
+
+        // Limpiar del map
+        jugadoresEnPartida.delete(socket.id);
+    });
 });
