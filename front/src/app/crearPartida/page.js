@@ -39,7 +39,9 @@ export default function Prueba() {
       if (data.validar) {
         const roomFinal = data.roomId;
         setIdRoom(roomFinal);
-        router.replace(`/juego?idRoom=${roomFinal}&personaje=${idPersonaje}&idUsuario=${idUsuario}&empieza=${data.empezar}`);
+        router.replace(
+          `/juego?idRoom=${roomFinal}&personaje=${idPersonaje}&idUsuario=${idUsuario}&empieza=${data.empezar}`
+        );
       } else {
         alert(data.res);
       }
@@ -47,6 +49,10 @@ export default function Prueba() {
       console.error("Error al conectar con el servidor:", error);
       alert("Error al conectar con el servidor");
     }
+  }
+
+  function volverAlMenu() {
+    router.push(`/elegirPersonaje?idUsuario=${idUsuario}`);
   }
 
   return (
@@ -62,6 +68,9 @@ export default function Prueba() {
               onClick={() => setHacer("unirse")}
               text="Unirse a Partida"
             />
+            <div className={styles.volverMenuGeneral}>
+              <Button text="Volver a elegir personaje" onClick={volverAlMenu} />
+            </div>
           </div>
         )}
 

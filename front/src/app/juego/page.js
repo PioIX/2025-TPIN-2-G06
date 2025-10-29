@@ -1,14 +1,13 @@
 "use client";
 import MenuPelea from "@/components/MenuPelea";
-import { useEffect, useState } from "react";
+import Button from "@/components/Button";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Personaje from "@/components/Personaje";
 import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
-import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import clsx from 'clsx';
-
 
 
 
@@ -31,9 +30,10 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({});
-  const [chequeoGandor, setChequeoGanador] = useState(false)
-  const [ganador, setGanador] = useState("")
+  const [chequeoGandor, setChequeoGanador] = useState(false);
+  const [ganador, setGanador] = useState("");
   const router = useRouter();
+
 
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
@@ -41,13 +41,47 @@ export default function Home() {
   const [tipoNotificacion, setTipoNotificacion] = useState("");
   const [flashRojo, setFlashRojo] = useState({ yo: false, rival: false });
   const [numerosFlotantes, setNumerosFlotantes] = useState([]);
+  
+  // NUEVO: Flag para saber si el juego ya empezó
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+  const registradoEnPartida = useRef(false);
+  const yaDetectoRecarga = useRef(false);
 
+  // Extraer parámetros de URL
+  useEffect(() => {
+    const paramId = searchParams.get("personaje");
+    const paramIdUsuario = searchParams.get("idUsuario");
+    const paramIdRoom = searchParams.get("idRoom");
 
+    setIdPersonaje(paramId);
+    setIdUsuario(paramIdUsuario);
+    setIdRoom(paramIdRoom);
+  }, [searchParams]);
+
+  // Cargar personaje propio
+  useEffect(() => {
+    if (idPersonaje && idRoom) {
+      encontrarP(idPersonaje).then((res) => {
+        setPersonaje(res);
+      });
+    }
+  }, [idPersonaje, idRoom]);
+
+  // Detectar cuando ambos personajes están listos
+  useEffect(() => {
+    if (personaje && personajeRival && !juegoIniciado) {
+      console.log("✅ ¡Ambos personajes cargados! Juego iniciado");
+      setJuegoIniciado(true);
+    }
+  }, [personaje, personajeRival]);
+
+  // Socket events - SE EJECUTA SIEMPRE
   useEffect(() => {
     if (!socket) return;
-    if (!idRoom) return;
+    if (!idRoom || !idUsuario) return;
 
     socket.emit("joinRoom", { room: idRoom });
+    
     let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
@@ -67,11 +101,11 @@ export default function Home() {
           habRivalTemp = {
             daño: data.daño,
             nombreHabilidad: data.nombreHabilidad,
-            esquiva: data.esquiva !== undefined ? data.esquiva : null
+            esquiva: data.esquiva !== undefined ? data.esquiva : null,
           };
           setHabRival(habRivalTemp);
         } else {
-          console.error('Datos inválidos para habRival:', data);
+          console.error("Datos inválidos para habRival:", data);
         }
 
         if (data.numeroTurno == 1) {
@@ -90,8 +124,6 @@ export default function Home() {
     });
 
     socket.on("ganadorAviso", (data) => {
-      console.log(idUsuario);
-      console.log(data.idUsuario);
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste");
         setChequeoGanador(true)
@@ -107,10 +139,101 @@ export default function Home() {
         }
       }
     });
-  }, [socket]);
 
+    socket.on("partidaCancelada", (data) => {
+      console.warn("❌ Partida cancelada:", data.motivo);
+      alert("La partida fue cancelada porque el otro jugador se desconectó.");
+      
+      // Desregistrar antes de salir
+      if (registradoEnPartida.current) {
+        socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
+      }
+      
+      router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
+    });
+
+    // Cleanup
+    return () => {
+      socket.off("newMessage");
+      socket.off("validarCambioTurno");
+      socket.off("avisito");
+      socket.off("ganadorAviso");
+      socket.off("partidaCancelada");
+    };
+  }, [socket, idRoom, idUsuario, router, searchParams]);
+
+  // REGISTRAR EN PARTIDA - SOLO CUANDO EL JUEGO INICIA
   useEffect(() => {
-    console.log(habRival);
+    if (!juegoIniciado || !socket || !idRoom || !idUsuario) return;
+    if (registradoEnPartida.current) return; // Evitar registrar múltiples veces
+
+    console.log("🎮 Registrando jugador en partida activa...");
+    socket.emit("registrarEnPartida", { room: idRoom, idUsuario: idUsuario });
+    registradoEnPartida.current = true;
+
+    // Cleanup cuando sale del juego
+    return () => {
+      if (registradoEnPartida.current) {
+        console.log("👋 Saliendo de la partida...");
+        socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
+      }
+    };
+  }, [juegoIniciado, socket, idRoom, idUsuario]);
+
+  // DETECTAR RECARGA - SOLO CUANDO EL JUEGO YA INICIÓ
+  useEffect(() => {
+    if (!juegoIniciado) return;
+    if (yaDetectoRecarga.current) return; // Evitar múltiples detecciones
+
+    // Crear una key única para esta partida específica
+    const keyPartida = `partida_${idRoom}_${idUsuario}`;
+    
+    // Verificar si esta partida fue marcada como interrumpida
+    const partidaInterrumpida = sessionStorage.getItem(keyPartida);
+
+    if (partidaInterrumpida === "true") {
+      console.log("⚠️ Recarga detectada durante el juego");
+      yaDetectoRecarga.current = true;
+      
+      // Limpiar el flag INMEDIATAMENTE
+      sessionStorage.removeItem(keyPartida);
+      
+      if (socket && idUsuario && idRoom && registradoEnPartida.current) {
+        // Notificar al backend para que avise a AMBOS jugadores
+        socket.emit("jugadorRecargo", { 
+          room: idRoom, 
+          idUsuario: idUsuario 
+        });
+        
+        socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
+      }
+      
+      alert("Has recargado la página. La partida fue cancelada.");
+      router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
+      return;
+    }
+
+    // Marcar esta partida en beforeunload
+    const handleBeforeUnload = () => {
+      if (socket && idUsuario && registradoEnPartida.current) {
+        // Marcar SOLO esta partida específica
+        sessionStorage.setItem(keyPartida, "true");
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // NO limpiar el sessionStorage aquí porque el componente se desmonta antes de la recarga
+    };
+  }, [juegoIniciado, socket, idRoom, idUsuario, router]);
+
+  // Resto de useEffects...
+  useEffect(() => {
     if (avisitoFlag) {
       if (habRival != undefined) {
         restarVida(habRival);
@@ -133,16 +256,6 @@ export default function Home() {
   }, [personajesFlag]);
 
   useEffect(() => {
-    const paramId = searchParams.get("personaje");
-    const paramIdUsuario = searchParams.get("idUsuario");
-    const paramIdRoom = searchParams.get("idRoom");
-
-    setIdPersonaje(paramId);
-    setIdUsuario(paramIdUsuario);
-    setIdRoom(paramIdRoom);
-  }, [searchParams]);
-
-  useEffect(() => {
     if (personaje) {
       if (personaje.saludActual <= 0) {
         socket.emit("ganador", { idUsuario: idUsuario });
@@ -150,26 +263,18 @@ export default function Home() {
     }
   }, [personaje]);
 
-  useEffect(() => {
-    if (idPersonaje && idRoom) {
-      encontrarP(idPersonaje).then((res) => {
-        setPersonaje(res);
-      });
-    }
-  }, [idPersonaje, idRoom]);
-
   async function encontrarP(id) {
     try {
-      const response = await fetch('http://localhost:4000/encontrarPersonaje', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idHabilidad: id })
+      const response = await fetch("http://localhost:4000/encontrarPersonaje", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idHabilidad: id }),
       });
 
       const data = await response.json();
       if (data.res) {
         console.log("Personaje encontrado:", data.res);
-        return (data.res);
+        return data.res;
       }
     } catch (error) {
       console.error(error);
@@ -177,16 +282,18 @@ export default function Home() {
   }
 
   async function encontrarIdRival() {
-    console.log("XD");
     try {
-      const response = await fetch("http://localhost:4000/obtenerPersonajeOtroJugador", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idRoom: idRoom,
-          idUsuario: idUsuario,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:4000/obtenerPersonajeOtroJugador",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idRoom: idRoom,
+            idUsuario: idUsuario,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -206,7 +313,7 @@ export default function Home() {
       console.log(event.ataque.daño);
       setHabElegida(event.ataque);
       if (personaje.energiaActual >= event.ataque.consumo) {
-        setPersonaje(prevPersonaje => ({
+        setPersonaje((prevPersonaje) => ({
           ...prevPersonaje,
           energiaActual: prevPersonaje.energiaActual - event.ataque.consumo,
         }));
@@ -216,7 +323,7 @@ export default function Home() {
           idUsuario: idUsuario,
           numeroTurno: numeroTurno,
           daño: event.ataque.daño,
-          nombreHabilidad: event.ataque.nombre
+          nombreHabilidad: event.ataque.nombre,
         });
       } else {
         setMensajeError("No tienes suficiente energía.");
@@ -245,12 +352,12 @@ export default function Home() {
       setHabElegida({
         daño: 0,
         nombreHabilidad: "Defensa",
-        esquiva: probabilidadAleatoria
+        esquiva: probabilidadAleatoria,
       });
 
       setEmpieza(false);
 
-      setPersonaje(prevPersonaje => ({
+      setPersonaje((prevPersonaje) => ({
         ...prevPersonaje,
         energiaActual: prevPersonaje.energiaActual + 20,
       }));
@@ -260,7 +367,7 @@ export default function Home() {
         numeroTurno: numeroTurno,
         daño: 0,
         nombreHabilidad: "Defensa",
-        esquiva: probabilidadAleatoria
+        esquiva: probabilidadAleatoria,
       });
     }
   }
@@ -270,13 +377,13 @@ export default function Home() {
     const nuevo = {
       id,
       daño: Math.round(daño),
-      esRival
+      esRival,
     };
 
-    setNumerosFlotantes(prev => [...prev, nuevo]);
+    setNumerosFlotantes((prev) => [...prev, nuevo]);
 
     setTimeout(() => {
-      setNumerosFlotantes(prev => prev.filter(n => n.id !== id));
+      setNumerosFlotantes((prev) => prev.filter((n) => n.id !== id));
     }, 2000);
   }
 
@@ -288,6 +395,19 @@ export default function Home() {
     setTimeout(() => {
       setMostrarNotificacion(false);
     }, 2000);
+  }
+
+  function volverAlMenu() {
+    // Limpiar el flag de esta partida antes de salir
+    const keyPartida = `partida_${idRoom}_${idUsuario}`;
+    sessionStorage.removeItem(keyPartida);
+    
+    // Desregistrar antes de salir normalmente
+    if (registradoEnPartida.current && socket && idUsuario) {
+      socket.emit("salirDePartida", { idUsuario });
+      registradoEnPartida.current = false;
+    }
+    router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
   }
 
   function restarVida(accionRival) {
@@ -305,8 +425,9 @@ export default function Home() {
 
     // Ambos atacan
     if (dañoRivalRecibido > 0 && habElegida.daño > 0) {
-      dañoAplicadoAMi = dañoRivalRecibido * personaje.fuerza / 100 * 0.75;
-      dañoAplicadoARival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+      dañoAplicadoAMi = ((dañoRivalRecibido * personaje.fuerza) / 100) * 0.75;
+      dañoAplicadoARival =
+        ((habElegida.daño * personajeRival.fuerza) / 100) * 0.75;
       mensaje = `⚔️ ¡Intercambio de golpes!`;
       tipo = "ataque";
     }
@@ -326,7 +447,6 @@ export default function Home() {
       console.log("Esquiva rival:", esquivaRival);
       console.log("Mi velocidad:", personajeRival.velocidad);
 
-      // El rival esquiva si su número aleatorio es menor o igual a mi velocidad
       if (esquivaRival !== null && esquivaRival <= personajeRival.velocidad) {
         console.log("El rival esquivó mi ataque");
         dañoAplicadoARival = 0;
@@ -334,7 +454,8 @@ export default function Home() {
         tipo = "esquiva";
       } else {
         console.log("El rival no esquivó, recibe daño");
-        dañoAplicadoARival = habElegida.daño * personajeRival.fuerza / 100 * 0.75;
+        dañoAplicadoARival =
+          ((habElegida.daño * personajeRival.fuerza) / 100) * 0.75;
         mensaje = `⚔️ ¡Has impactado tu ataque!`;
         tipo = "ataque";
       }
@@ -346,15 +467,17 @@ export default function Home() {
       console.log("Mi esquiva:", habElegida.esquiva);
       console.log("Velocidad del personaje:", personaje.velocidad);
 
-      // Yo esquivo si mi número aleatorio es menor o igual a mi velocidad
-      if (habElegida.esquiva !== null && habElegida.esquiva <= personaje.velocidad) {
+      if (
+        habElegida.esquiva !== null &&
+        habElegida.esquiva <= personaje.velocidad
+      ) {
         console.log("Yo esquivé el ataque");
         dañoAplicadoAMi = 0;
         mensaje = `🛡️ ¡Esquivaste!\n${accionRival.nombreHabilidad} no te alcanzó`;
         tipo = "esquiva";
       } else {
         console.log("No esquivé, recibo daño");
-        dañoAplicadoAMi = dañoRivalRecibido * personaje.fuerza / 100 * 0.75;
+        dañoAplicadoAMi = ((dañoRivalRecibido * personaje.fuerza) / 100) * 0.75;
         mensaje = `💥 ¡Te golpearon con ${accionRival.nombreHabilidad}!\nNo pudiste esquivar`;
         tipo = "golpe";
       }
@@ -366,28 +489,32 @@ export default function Home() {
 
     // Aplicar efectos visuales
     if (dañoAplicadoAMi > 0) {
-      setFlashRojo(prev => ({ ...prev, yo: true }));
+      setFlashRojo((prev) => ({ ...prev, yo: true }));
       agregarNumeroFlotante(dañoAplicadoAMi, false);
-      setTimeout(() => setFlashRojo(prev => ({ ...prev, yo: false })), 500);
+      setTimeout(() => setFlashRojo((prev) => ({ ...prev, yo: false })), 500);
     }
 
     if (dañoAplicadoARival > 0) {
-      setFlashRojo(prev => ({ ...prev, rival: true }));
+      setFlashRojo((prev) => ({ ...prev, rival: true }));
       agregarNumeroFlotante(dañoAplicadoARival, true);
-      setTimeout(() => setFlashRojo(prev => ({ ...prev, rival: false })), 500);
+      setTimeout(
+        () => setFlashRojo((prev) => ({ ...prev, rival: false })),
+        500
+      );
     }
 
     // Aplicar daño
-    setPersonaje(prevPersonaje => ({
+    setPersonaje((prevPersonaje) => ({
       ...prevPersonaje,
       saludActual: Math.round(prevPersonaje.saludActual - dañoAplicadoAMi),
     }));
 
-    setPersonajeRival(prevPersonajeRival => ({
+    setPersonajeRival((prevPersonajeRival) => ({
       ...prevPersonajeRival,
-      saludActual: Math.round(prevPersonajeRival.saludActual - dañoAplicadoARival),
+      saludActual: Math.round(
+        prevPersonajeRival.saludActual - dañoAplicadoARival
+      ),
     }));
-
 
     // Mostrar notificación
     mostrarNotificacionCombate(mensaje, tipo);
@@ -434,39 +561,41 @@ return (
             />
           </div>
 
-          <div className={flashRojo.rival ? 'flash-rojo' : ''}>
-            <Personaje
-              className="personajeRival"
-              nombre={personajeRival.nombre}
-              imagen={personajeRival.fotoPersonaje}
-              saludMax={personajeRival.saludMax}
-              saludActual={personajeRival.saludActual}
-            />
-          </div>
-
-          {/* Números flotantes */}
-          {numerosFlotantes.map(num => (
-            <div
-              key={num.id}
-              className="numero-flotante"
-              style={{
-                left: num.esRival ? '75%' : '25%',
-                top: '40%'
-              }}
-            >
-              -{num.daño}
+            <div className={flashRojo.rival ? "flash-rojo" : ""}>
+              <Personaje
+                className="personajeRival"
+                nombre={personajeRival.nombre}
+                imagen={personajeRival.fotoPersonaje}
+                saludMax={personajeRival.saludMax}
+                saludActual={personajeRival.saludActual}
+              />
             </div>
-          ))}
 
-          <div className="menu">
-            <MenuPelea
-              empieza={empieza}
-              ataques={personaje.habilidades}
-              probabilidadEsquivar={personaje.velocidad}
-              onClick={ejecutarHabilidad}
-            />
+            {numerosFlotantes.map((num) => (
+              <div
+                key={num.id}
+                className="numero-flotante"
+                style={{
+                  left: num.esRival ? "75%" : "25%",
+                  top: "40%",
+                }}
+              >
+                -{num.daño}
+              </div>
+            ))}
+
+            <div className="menu">
+              <MenuPelea
+                empieza={empieza}
+                ataques={personaje.habilidades}
+                probabilidadEsquivar={personaje.velocidad}
+                onClick={ejecutarHabilidad}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <p>Esperando resultado...</p>
+        )
       ) : (
         <div
           className={clsx("resultado", {
@@ -512,15 +641,22 @@ return (
         <div className="bar-container">
           <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
         </div>
-      </div>
-    )}
+      )}
 
-    {/* Notificación de Combate */}
-    {mostrarNotificacion && (
-      <div className={`notificacion-combate ${tipoNotificacion}`}>
-        <div className="notificacion-mensaje">{mensajeNotificacion}</div>
-      </div>
-    )}
-  </main>
-)
+      {mensajeError && mostrarModal && (
+        <div className="modalERROR">
+          <p>{mensajeError}</p>
+          <div className="bar-container">
+            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+          </div>
+        </div>
+      )}
+
+      {mostrarNotificacion && (
+        <div className={`notificacion-combate ${tipoNotificacion}`}>
+          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
+        </div>
+      )}
+    </main>
+  );
 }
