@@ -30,8 +30,10 @@
   font-weight: 600;
 }
 
+
 .volverAlMenu {
   opacity: 0.85;
   animation: fadeIn 1s ease-out;
   z-index: 1;
 }
+

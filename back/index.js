@@ -270,6 +270,28 @@ app.post('/entrarPartida', async function (req, res) {
     }
 });
 
+app.post('/actualizarSala', async function (req, res) {
+    try {
+        const result = await realizarQuery(`
+            UPDATE Salas
+            SET idGanador = '${req.body.idGanador}', esta_activa = 0
+            WHERE numero_room = '${req.body.numero_room}';
+        `);
+
+        res.send({
+            res: "Sala actualizada correctamente",
+            validar: true
+        });
+
+    } catch (error) {
+        console.error("Error al actualizar la sala:", error);
+        res.status(500).send({
+            res: "Error al procesar la solicitud",
+            validar: false
+        });
+    }
+});
+
 // ===============================
 // SOCKET.IO CONFIG
 // ===============================
@@ -282,7 +304,7 @@ const server = app.listen(port, () => {
 
 const io = require("socket.io")(server, {
     cors: {
-        origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+        origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://10.1.5.132:3001"],
         methods: ["GET", "POST"],
         credentials: true,
     },

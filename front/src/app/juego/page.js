@@ -7,6 +7,9 @@ import Personaje from "@/components/Personaje";
 import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
 import { useRouter } from "next/navigation";
+import clsx from 'clsx';
+
+
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -28,8 +31,10 @@ export default function Home() {
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({});
   const [chequeoGandor, setChequeoGanador] = useState(false);
+  const [ganador, setGanador] = useState("");
   const router = useRouter();
-  
+
+
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState("");
@@ -121,10 +126,17 @@ export default function Home() {
     socket.on("ganadorAviso", (data) => {
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste");
-        setChequeoGanador(true);
+        setChequeoGanador(true)
+        setGanador("gane")
+        actualizarSalas()
       } else {
-        console.log("Perdiste");
-        setChequeoGanador(true);
+        setChequeoGanador(true)
+        if (ganador == "gane") {
+          setGanador("empate")
+        } else {
+          console.log("Perdiste");
+          setGanador("perdiste")
+        }
       }
     });
 
@@ -508,25 +520,46 @@ export default function Home() {
     mostrarNotificacionCombate(mensaje, tipo);
   }
 
-  return (
-    <main className="contenedor">
-      <div className={styles.volverMenuGeneral}>
-        <Button text="Volver" onClick={volverAlMenu} />
-      </div>
-      {personaje && personajeRival ? (
-        !chequeoGandor ? (
-          <div>
-            <div className={flashRojo.yo ? "flash-rojo" : ""}>
-              <Personaje
-                className="personajePropio"
-                nombre={personaje.nombre}
-                imagen={personaje.fotoPersonaje}
-                saludMax={personaje.saludMax}
-                saludActual={personaje.saludActual}
-                energiaMax={personaje.energiaMax}
-                energiaActual={personaje.energiaActual}
-              />
-            </div>
+  async function actualizarSalas() {
+    try {
+      const response = await fetch("http://localhost:4000/actualizarSala", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero_room: idRoom,
+          idGanador: idUsuario,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.idPersonaje) {
+        setIdPersonajeRival(data.idPersonaje);
+        const rival = await encontrarP(data.idPersonaje);
+        setPersonajeRival(rival);
+        console.log("ID Personaje Rival:", data.idPersonaje);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+return (
+  <main className="contenedor">
+    {personaje && personajeRival ? (
+      !chequeoGandor ? (
+        <div>
+          <div className={flashRojo.yo ? 'flash-rojo' : ''}>
+            <Personaje
+              className="personajePropio"
+              nombre={personaje.nombre}
+              imagen={personaje.fotoPersonaje}
+              saludMax={personaje.saludMax}
+              saludActual={personaje.saludActual}
+              energiaMax={personaje.energiaMax}
+              energiaActual={personaje.energiaActual}
+            />
+          </div>
 
             <div className={flashRojo.rival ? "flash-rojo" : ""}>
               <Personaje
@@ -564,9 +597,49 @@ export default function Home() {
           <p>Esperando resultado...</p>
         )
       ) : (
-        <div className={styles.roomInfoContainer}>
-          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
-          <p>Cargando personaje...</p>
+        <div
+          className={clsx("resultado", {
+            gane: ganador === "gane",
+            perdiste: ganador === "perdiste",
+            empate: ganador === "empate",
+          })}
+        >
+
+
+          {ganador === "gane" && (
+            <div>
+              <p className="victoria-text">¡Ganaste!</p>
+              <img src={personaje.fotoPersonaje} alt={personaje.fotoPersonaje} className={"imagenGanador"} />
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+          {ganador === "perdiste" && (
+            <div>
+              <p className="derrota-text">¡Perdiste!</p>
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+          {ganador === "empate" && (
+            <div>
+              <p>¡Han empatado!</p>
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+        </div>
+      )
+    ) : (
+      <div className={styles.roomInfoContainer}>
+        <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+        <p>Cargando personaje...</p>
+      </div>
+    )}
+
+    {/* Modal de Energía Insuficiente */}
+    {mensajeError && mostrarModal && (
+      <div className="modalERROR">
+        <p>{mensajeError}</p>
+        <div className="bar-container">
+          <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
         </div>
       )}
 
