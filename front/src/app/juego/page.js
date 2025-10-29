@@ -1,7 +1,7 @@
 "use client";
 import MenuPelea from "@/components/MenuPelea";
 import Button from "@/components/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Personaje from "@/components/Personaje";
 import styles from "./juego.module.css";
@@ -29,21 +29,52 @@ export default function Home() {
   const [dataRival, setDataRival] = useState({});
   const [chequeoGandor, setChequeoGanador] = useState(false);
   const router = useRouter();
+  
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState("");
   const [tipoNotificacion, setTipoNotificacion] = useState("");
   const [flashRojo, setFlashRojo] = useState({ yo: false, rival: false });
   const [numerosFlotantes, setNumerosFlotantes] = useState([]);
+  
+  // NUEVO: Flag para saber si el juego ya empezó
+  const [juegoIniciado, setJuegoIniciado] = useState(false);
+  const registradoEnPartida = useRef(false);
 
+  // Extraer parámetros de URL
+  useEffect(() => {
+    const paramId = searchParams.get("personaje");
+    const paramIdUsuario = searchParams.get("idUsuario");
+    const paramIdRoom = searchParams.get("idRoom");
+
+    setIdPersonaje(paramId);
+    setIdUsuario(paramIdUsuario);
+    setIdRoom(paramIdRoom);
+  }, [searchParams]);
+
+  // Cargar personaje propio
+  useEffect(() => {
+    if (idPersonaje && idRoom) {
+      encontrarP(idPersonaje).then((res) => {
+        setPersonaje(res);
+      });
+    }
+  }, [idPersonaje, idRoom]);
+
+  // Detectar cuando ambos personajes están listos
+  useEffect(() => {
+    if (personaje && personajeRival && !juegoIniciado) {
+      console.log("✅ ¡Ambos personajes cargados! Juego iniciado");
+      setJuegoIniciado(true);
+    }
+  }, [personaje, personajeRival]);
+
+  // Socket events - SE EJECUTA SIEMPRE
   useEffect(() => {
     if (!socket) return;
     if (!idRoom || !idUsuario) return;
 
     socket.emit("joinRoom", { room: idRoom });
-    
-    // REGISTRAR que estamos EN LA PARTIDA
-    socket.emit("registrarEnPartida", { room: idRoom, idUsuario: idUsuario });
     
     let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
@@ -87,8 +118,6 @@ export default function Home() {
     });
 
     socket.on("ganadorAviso", (data) => {
-      console.log(idUsuario);
-      console.log(data.idUsuario);
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste");
         setChequeoGanador(true);
@@ -98,72 +127,61 @@ export default function Home() {
       }
     });
 
-    // ESCUCHAR cuando la partida es cancelada
     socket.on("partidaCancelada", (data) => {
       console.warn("❌ Partida cancelada:", data.motivo);
-      
-      // Marcar en localStorage que la partida fue cancelada
-      localStorage.setItem("partidaCancelada", "true");
-      
       alert("La partida fue cancelada porque el otro jugador se desconectó.");
       
-      // Avisar al backend que salimos antes de redirigir
-      socket.emit("salirDePartida", { idUsuario });
+      // Desregistrar antes de salir
+      if (registradoEnPartida.current) {
+        socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
+      }
       
       router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
     });
 
-    // Cleanup al desmontar
+    // Cleanup
     return () => {
-      console.log("🧹 Limpiando listeners y saliendo de partida");
       socket.off("newMessage");
       socket.off("validarCambioTurno");
       socket.off("avisito");
       socket.off("ganadorAviso");
       socket.off("partidaCancelada");
-      
-      // Avisar que salimos de la partida
-      socket.emit("salirDePartida", { idUsuario });
     };
-  }, [socket, idRoom, idUsuario, router]);
+  }, [socket, idRoom, idUsuario, router, searchParams]);
 
-  // NUEVO: Detectar recarga de página y redirigir
+  // REGISTRAR EN PARTIDA - SOLO CUANDO EL JUEGO INICIA
   useEffect(() => {
-    // Verificar si venimos de una partida cancelada
-    const partidaCancelada = localStorage.getItem("partidaCancelada");
-    
-    if (partidaCancelada === "true") {
-      // Limpiar el flag
-      localStorage.removeItem("partidaCancelada");
-      
-      // Redirigir inmediatamente
-      alert("La partida fue cancelada");
-      router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
-      return;
-    }
+    if (!juegoIniciado || !socket || !idRoom || !idUsuario) return;
+    if (registradoEnPartida.current) return; // Evitar registrar múltiples veces
 
-    // Marcar que estamos en partida
-    sessionStorage.setItem("enPartida", "true");
-    sessionStorage.setItem("roomActual", idRoom);
-    sessionStorage.setItem("usuarioActual", idUsuario);
+    console.log("🎮 Registrando jugador en partida activa...");
+    socket.emit("registrarEnPartida", { room: idRoom, idUsuario: idUsuario });
+    registradoEnPartida.current = true;
 
-    // Detectar si es una recarga (performance.navigation.type === 1)
-    // o si hay datos en sessionStorage de una partida previa
+    // Cleanup cuando sale del juego
+    return () => {
+      if (registradoEnPartida.current) {
+        console.log("👋 Saliendo de la partida...");
+        socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
+      }
+    };
+  }, [juegoIniciado, socket, idRoom, idUsuario]);
+
+  // DETECTAR RECARGA - SOLO CUANDO EL JUEGO YA INICIÓ
+  useEffect(() => {
+    if (!juegoIniciado) return;
+
     const esRecarga = performance.navigation?.type === 1 || 
                       performance.getEntriesByType?.("navigation")[0]?.type === "reload";
 
     if (esRecarga) {
-      console.log("⚠️ Recarga detectada - Cancelando partida");
+      console.log("⚠️ Recarga detectada durante el juego");
       
-      if (socket && idUsuario && idRoom) {
-        // Emitir que abandonamos por recarga
+      if (socket && idUsuario && idRoom && registradoEnPartida.current) {
         socket.emit("salirDePartida", { idUsuario });
-        
-        // Notificar al otro jugador
-        socket.emit("avisar", { 
-          data: idUsuario, 
-          tipo: "abandonoRecarga" 
-        });
+        registradoEnPartida.current = false;
       }
       
       alert("Has recargado la página. La partida fue cancelada.");
@@ -171,14 +189,10 @@ export default function Home() {
       return;
     }
 
-    // Listener para detectar cuando el usuario intenta cerrar/recargar
-    const handleBeforeUnload = (e) => {
-      // Marcar en sessionStorage que se está saliendo
-      sessionStorage.setItem("partidaInterrumpida", "true");
-      
-      if (socket && idUsuario) {
-        // Intentar enviar señal (no siempre funciona en beforeunload)
+    const handleBeforeUnload = () => {
+      if (socket && idUsuario && registradoEnPartida.current) {
         socket.emit("salirDePartida", { idUsuario });
+        registradoEnPartida.current = false;
       }
     };
 
@@ -186,14 +200,11 @@ export default function Home() {
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      sessionStorage.removeItem("enPartida");
-      sessionStorage.removeItem("roomActual");
-      sessionStorage.removeItem("usuarioActual");
     };
-  }, [idRoom, idUsuario, socket, router]);
+  }, [juegoIniciado, socket, idRoom, idUsuario, router]);
 
+  // Resto de useEffects...
   useEffect(() => {
-    console.log(habRival);
     if (avisitoFlag) {
       if (habRival != undefined) {
         restarVida(habRival);
@@ -216,30 +227,12 @@ export default function Home() {
   }, [personajesFlag]);
 
   useEffect(() => {
-    const paramId = searchParams.get("personaje");
-    const paramIdUsuario = searchParams.get("idUsuario");
-    const paramIdRoom = searchParams.get("idRoom");
-
-    setIdPersonaje(paramId);
-    setIdUsuario(paramIdUsuario);
-    setIdRoom(paramIdRoom);
-  }, [searchParams]);
-
-  useEffect(() => {
     if (personaje) {
       if (personaje.saludActual <= 0) {
         socket.emit("ganador", { idUsuario: idUsuario });
       }
     }
   }, [personaje]);
-
-  useEffect(() => {
-    if (idPersonaje && idRoom) {
-      encontrarP(idPersonaje).then((res) => {
-        setPersonaje(res);
-      });
-    }
-  }, [idPersonaje, idRoom]);
 
   async function encontrarP(id) {
     try {
@@ -260,7 +253,6 @@ export default function Home() {
   }
 
   async function encontrarIdRival() {
-    console.log("XD");
     try {
       const response = await fetch(
         "http://localhost:4000/obtenerPersonajeOtroJugador",
@@ -375,9 +367,16 @@ export default function Home() {
       setMostrarNotificacion(false);
     }, 2000);
   }
-  function volverAlMenu(){
-    router.replace(`/menuGeneral?idUsuario=${idUsuario}`)
+
+  function volverAlMenu() {
+    // Desregistrar antes de salir normalmente
+    if (registradoEnPartida.current && socket && idUsuario) {
+      socket.emit("salirDePartida", { idUsuario });
+      registradoEnPartida.current = false;
+    }
+    router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
   }
+
   function restarVida(accionRival) {
     const dañoRivalRecibido = accionRival.daño;
     const esquivaRival = accionRival.esquiva;
@@ -415,7 +414,6 @@ export default function Home() {
       console.log("Esquiva rival:", esquivaRival);
       console.log("Mi velocidad:", personajeRival.velocidad);
 
-      // El rival esquiva si su número aleatorio es menor o igual a mi velocidad
       if (esquivaRival !== null && esquivaRival <= personajeRival.velocidad) {
         console.log("El rival esquivó mi ataque");
         dañoAplicadoARival = 0;
@@ -436,7 +434,6 @@ export default function Home() {
       console.log("Mi esquiva:", habElegida.esquiva);
       console.log("Velocidad del personaje:", personaje.velocidad);
 
-      // Yo esquivo si mi número aleatorio es menor o igual a mi velocidad
       if (
         habElegida.esquiva !== null &&
         habElegida.esquiva <= personaje.velocidad
@@ -520,7 +517,6 @@ export default function Home() {
               />
             </div>
 
-            {/* Números flotantes */}
             {numerosFlotantes.map((num) => (
               <div
                 key={num.id}
@@ -544,7 +540,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <p>Esperando resultado...</p> // Agrega el mensaje que quieras aquí
+          <p>Esperando resultado...</p>
         )
       ) : (
         <div className={styles.roomInfoContainer}>
@@ -553,7 +549,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal de Energía Insuficiente */}
       {mensajeError && mostrarModal && (
         <div className="modalERROR">
           <p>{mensajeError}</p>
@@ -563,7 +558,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Notificación de Combate */}
       {mostrarNotificacion && (
         <div className={`notificacion-combate ${tipoNotificacion}`}>
           <div className="notificacion-mensaje">{mensajeNotificacion}</div>
