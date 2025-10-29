@@ -5,6 +5,12 @@ import { useSearchParams } from "next/navigation";
 import Personaje from "@/components/Personaje";
 import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
+import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
+import clsx from 'clsx';
+
+
+
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -25,13 +31,17 @@ export default function Home() {
   const [avisitoFlag, setAvisitoFlag] = useState(false);
   const [personajesFlag, setPersonajesFlag] = useState(false);
   const [dataRival, setDataRival] = useState({});
-  const [chequeoGandor, setChequeoGanador] = useState(false) 
+  const [chequeoGandor, setChequeoGanador] = useState(false)
+  const [ganador, setGanador] = useState("")
+  const router = useRouter();
+
   // Estados para efectos visuales
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   const [mensajeNotificacion, setMensajeNotificacion] = useState("");
   const [tipoNotificacion, setTipoNotificacion] = useState("");
   const [flashRojo, setFlashRojo] = useState({ yo: false, rival: false });
   const [numerosFlotantes, setNumerosFlotantes] = useState([]);
+
 
   useEffect(() => {
     if (!socket) return;
@@ -85,9 +95,16 @@ export default function Home() {
       if (data.idUsuario !== idUsuario) {
         console.log("Ganaste");
         setChequeoGanador(true)
+        setGanador("gane")
+        actualizarSalas()
       } else {
-        console.log("Perdiste");
         setChequeoGanador(true)
+        if (ganador == "gane") {
+          setGanador("empate")
+        } else {
+          console.log("Perdiste");
+          setGanador("perdiste")
+        }
       }
     });
   }, [socket]);
@@ -376,6 +393,30 @@ export default function Home() {
     mostrarNotificacionCombate(mensaje, tipo);
   }
 
+  async function actualizarSalas() {
+    try {
+      const response = await fetch("http://localhost:4000/actualizarSala", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero_room: idRoom,
+          idGanador: idUsuario,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.idPersonaje) {
+        setIdPersonajeRival(data.idPersonaje);
+        const rival = await encontrarP(data.idPersonaje);
+        setPersonajeRival(rival);
+        console.log("ID Personaje Rival:", data.idPersonaje);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
 return (
   <main className="contenedor">
     {personaje && personajeRival ? (
@@ -427,7 +468,35 @@ return (
           </div>
         </div>
       ) : (
-        <p>Esperando resultado...</p> // Agrega el mensaje que quieras aquí
+        <div
+          className={clsx("resultado", {
+            gane: ganador === "gane",
+            perdiste: ganador === "perdiste",
+            empate: ganador === "empate",
+          })}
+        >
+
+
+          {ganador === "gane" && (
+            <div>
+              <p className="victoria-text">¡Ganaste!</p>
+              <img src={personaje.fotoPersonaje} alt={personaje.fotoPersonaje} className={"imagenGanador"} />
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+          {ganador === "perdiste" && (
+            <div>
+              <p className="derrota-text">¡Perdiste!</p>
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+          {ganador === "empate" && (
+            <div>
+              <p>¡Han empatado!</p>
+              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
+            </div>
+          )}
+        </div>
       )
     ) : (
       <div className={styles.roomInfoContainer}>
@@ -453,4 +522,5 @@ return (
       </div>
     )}
   </main>
-)}
+)
+}
