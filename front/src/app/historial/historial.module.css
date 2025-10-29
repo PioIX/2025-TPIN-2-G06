@@ -1,0 +1,55 @@
+.historialWrapper {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+
+.historialTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.historialTable th, .historialTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.historialTable th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.historialTable td {
+  font-size: 14px;
+}
+
+.historialTable tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.historialTable tr:hover {
+  background-color: #e2e2e2;
+}
+
+.winJugador1 {
+  color: green;
+  font-weight: bold;
+}
+
+.winJugador2 {
+  color: red;
+  font-weight: bold;
+}
+
+.loading {
+  text-align: center;
+  font-size: 16px;
+}
+
+.noData {
+  text-align: center;
+  font-size: 16px;
+  color: #999;
+}

@@ -78,13 +78,6 @@ app.get('/obtenerPersonajes', async function (req, res) {
     res.send(respuesta);
 })
 
-// OBTENER MAPAS
-app.get('/obtenerMapas', async function (req, res) {
-    let respuesta;
-    respuesta = await realizarQuery("SELECT * FROM Mapas")
-    res.send(respuesta);
-})
-
 // OBTENER PARTIDAS
 app.get('/obtenerPartidas', async function (req, res) {
     try {
@@ -98,6 +91,54 @@ app.get('/obtenerPartidas', async function (req, res) {
         res.status(500).send("Error al obtener las partidas");
     }
 });
+
+//OBTENER HISTORIAL
+app.get('/obtenerHistorial', async function (req, res) {
+  const { idUsuario } = req.query; // Obtiene el idUsuario de la query string
+  try {
+    const respuesta = await realizarQuery(`
+      SELECT 
+        s.numero_room, 
+        u1.nombre AS jugador1, 
+        u2.nombre AS jugador2, 
+        s.idGanador, 
+        u1.victorias AS victorias_jugador1, 
+        u1.derrotas AS derrotas_jugador1, 
+        u2.victorias AS victorias_jugador2, 
+        u2.derrotas AS derrotas_jugador2
+      FROM 
+        Salas s
+      JOIN 
+        Usuarios u1 ON u1.idUsuario = s.idGanador  -- El ganador
+      JOIN 
+        Usuarios u2 ON u2.idUsuario != s.idGanador  -- El perdedor
+      WHERE 
+        s.esta_activa = 0 AND (u1.idUsuario = ? OR u2.idUsuario = ?)
+    `, [idUsuario, idUsuario]); // Filtra por el id del usuario
+    
+    // Mapea los resultados y devuelve los datos al frontend
+    const historial = respuesta.map((partida) => {
+      // Identificar si el jugador1 o jugador2 es el ganador
+      const resultado = partida.idGanador === partida.jugador1 ? 'Ganador' : 'Perdedor';
+      
+      return {
+        numeroRoom: partida.numero_room,
+        jugador1: partida.jugador1,
+        jugador2: partida.jugador2,
+        resultado,
+        victoriasJugador1: partida.victorias_jugador1,
+        derrotasJugador1: partida.derrotas_jugador1,
+        victoriasJugador2: partida.victorias_jugador2,
+        derrotasJugador2: partida.derrotas_jugador2,
+      };
+    });
+    res.json(historial); // Responde con el historial de partidas
+  } catch (error) {
+    console.error("Error al obtener el historial de partidas:", error);
+    res.status(500).send("Error al obtener el historial de partidas");
+  }
+});
+
 
 app.post('/encontrarPersonaje', async function (req, res) {
     try {
