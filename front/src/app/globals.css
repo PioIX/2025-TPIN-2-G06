@@ -10,7 +10,7 @@ body {
   width: 100%;
   font-family: 'Poppins', sans-serif;
   color: #f9fafb;
-  background: linear-gradient(135deg, #1f2937, #111827);
+  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
 }
 
 /* ===================== */
@@ -23,11 +23,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1f2937, #111827);
+  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
 }
 
 .loginContainer {
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #4d7d99, #b39262); /* Gradiente suave entre azul claro y un tono cálido */
   backdrop-filter: blur(20px);
   border-radius: 18px;
   padding: 2.5rem;
@@ -209,7 +209,6 @@ input:focus {
   width: 90%;
   max-width: 800px;
   margin: 2rem auto;
-  background: linear-gradient(135deg, #1f2937, #111827);
   backdrop-filter: blur(20px);
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -252,7 +251,7 @@ input:focus {
 }
 
 .rankingTable tr:hover {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(104, 114, 255, 0.25);
   transition: background 0.3s ease;
 }
 
@@ -268,6 +267,10 @@ input:focus {
   overflow: hidden;
   margin: 0;
   padding: 0;
+  background-image: url("https://donboscosur.org/wp-content/uploads/2020/12/Archivo_013.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .fondo-victoria {
@@ -640,7 +643,16 @@ input:focus {
 
 .resultado {
   display: flex;
-  align-items: center; /* Centrar horizontalmente */
-  justify-content: ; /* Centrar verticalmente si es necesario */
+  flex-direction: column;
+  justify-content: flex-end; /* Alinea al fondo */
+  align-items: center; /* Centra horizontalmente */
+  height: 100%; /* Asegura que ocupe toda la altura */
+  padding-bottom: 30px; /* Da un pequeño margen al fondo */
+}
 
+.resultado div {
+  width: 100%; /* Asegura que los divs se alineen correctamente */
+  display: flex;
+  justify-content: center; /* Centra el contenido (botón) */
+  margin-bottom: 5%;
 }

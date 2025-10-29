@@ -474,11 +474,7 @@ export default function Home() {
           </div>
         ) : (
           <div
-            className={clsx("resultado", {
-              gane: ganador === "gane",
-              perdiste: ganador === "perdiste",
-              empate: ganador === "empate",
-            })}
+            className={"resultado"}
           >
             {ganador === "gane" && (
               <div>
