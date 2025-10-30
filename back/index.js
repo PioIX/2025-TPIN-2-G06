@@ -272,10 +272,16 @@ app.post('/entrarPartida', async function (req, res) {
 
 app.post('/actualizarSala', async function (req, res) {
     try {
-        const result = await realizarQuery(`
+        const resultSala = await realizarQuery(`
             UPDATE Salas
             SET idGanador = '${req.body.idGanador}', esta_activa = 0
             WHERE numero_room = '${req.body.numero_room}';
+        `);
+
+        const resultUsuario = await realizarQuery(`
+            UPDATE Usuarios
+            SET victorias = victorias + 1
+            WHERE idUsuario = '${req.body.idGanador}';
         `);
 
         res.send({
@@ -291,6 +297,29 @@ app.post('/actualizarSala', async function (req, res) {
         });
     }
 });
+
+app.post('/setearPerdedor', async function (req, res) {
+    try {
+        const resultUsuario = await realizarQuery(`
+            UPDATE Usuarios
+            SET derrotas = derrotas + 1
+            WHERE idUsuario = '${req.body.idPerdedor}';
+        `);
+
+        res.send({
+            res: "Sala actualizada correctamente",
+            validar: true
+        });
+
+    } catch (error) {
+        console.error("Error al actualizar la sala:", error);
+        res.status(500).send({
+            res: "Error al procesar la solicitud",
+            validar: false
+        });
+    }
+});
+
 
 // ===============================
 // SOCKET.IO CONFIG

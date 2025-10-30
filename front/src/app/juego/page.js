@@ -104,6 +104,7 @@ export default function Home() {
         } else {
           console.log("Perdiste");
           setGanador("perdiste")
+          setPerdedor()
         }
       }
     });
@@ -403,15 +404,21 @@ export default function Home() {
           idGanador: idUsuario,
         }),
       });
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-      const data = await response.json();
-
-      if (data.idPersonaje) {
-        setIdPersonajeRival(data.idPersonaje);
-        const rival = await encontrarP(data.idPersonaje);
-        setPersonajeRival(rival);
-        console.log("ID Personaje Rival:", data.idPersonaje);
-      }
+  async function setPerdedor() {
+    try {
+      const response = await fetch("http://localhost:4000/setearPerdedor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero_room: idRoom,
+          idPerdedor: idUsuario,
+        }),
+      });
     } catch (err) {
       console.error(err);
     }
