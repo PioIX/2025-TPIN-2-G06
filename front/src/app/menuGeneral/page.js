@@ -53,7 +53,7 @@ export default function MenuGeneral() {
         </button>
       </div>
 
-      <div className={styles.menuGeneralLogout}>
+      <div className={styles.volverMenuGeneral}>
         <Button text="Cerrar Sesión" onClick={handleLogout} />
       </div>
     </div>
