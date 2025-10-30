@@ -92,50 +92,53 @@ app.get('/obtenerPartidas', async function (req, res) {
     }
 });
 
-//OBTENER HISTORIAL
-app.get('/obtenerHistorial', async function (req, res) {
-  const { idUsuario } = req.query; // Obtiene el idUsuario de la query string
+app.get("/obtenerHistorial", async (req, res) => {
+  const idUsuario = req.query.idUsuario;
+
   try {
-    const respuesta = await realizarQuery(`
+    // 1️⃣ Buscar todas las salas donde participó el usuario
+    const [salasUsuario] = await db.query(
+      `SELECT numero_room FROM Sala_Usuarios WHERE idUsuario = ?`,
+      [idUsuario]
+    );
+
+    if (salasUsuario.length === 0) return res.json([]);
+
+    const rooms = salasUsuario.map(s => s.numero_room);
+
+    // 2️⃣ Buscar datos de esas salas y sus jugadores
+    const [partidas] = await db.query(
+      `
       SELECT 
-        s.numero_room, 
-        u1.nombre AS jugador1, 
-        u2.nombre AS jugador2, 
-        s.idGanador, 
-        u1.victorias AS victorias_jugador1, 
-        u1.derrotas AS derrotas_jugador1, 
-        u2.victorias AS victorias_jugador2, 
-        u2.derrotas AS derrotas_jugador2
-      FROM 
-        Salas s
-      JOIN 
-        Usuarios u1 ON u1.idUsuario = s.idGanador  -- El ganador
-      JOIN 
-        Usuarios u2 ON u2.idUsuario != s.idGanador  -- El perdedor
-      WHERE 
-        s.esta_activa = 0 AND (u1.idUsuario = ? OR u2.idUsuario = ?)
-    `, [idUsuario, idUsuario]); // Filtra por el id del usuario
-    
-    // Mapea los resultados y devuelve los datos al frontend
-    const historial = respuesta.map((partida) => {
-      // Identificar si el jugador1 o jugador2 es el ganador
-      const resultado = partida.idGanador === partida.jugador1 ? 'Ganador' : 'Perdedor';
-      
-      return {
-        numeroRoom: partida.numero_room,
-        jugador1: partida.jugador1,
-        jugador2: partida.jugador2,
-        resultado,
-        victoriasJugador1: partida.victorias_jugador1,
-        derrotasJugador1: partida.derrotas_jugador1,
-        victoriasJugador2: partida.victorias_jugador2,
-        derrotasJugador2: partida.derrotas_jugador2,
-      };
-    });
-    res.json(historial); // Responde con el historial de partidas
+        s.numero_room,
+        s.idGanador,
+        u1.nombre AS jugador1,
+        u2.nombre AS jugador2,
+        p1.nombre AS personaje1,
+        p2.nombre AS personaje2
+      FROM Salas s
+      JOIN Sala_Usuarios su1 ON su1.numero_room = s.numero_room
+      JOIN Sala_Usuarios su2 ON su2.numero_room = s.numero_room AND su1.idUsuario <> su2.idUsuario
+      JOIN Usuarios u1 ON u1.idUsuario = su1.idUsuario
+      JOIN Usuarios u2 ON u2.idUsuario = su2.idUsuario
+      JOIN Personajes p1 ON p1.idPersonaje = su1.idPersonaje
+      JOIN Personajes p2 ON p2.idPersonaje = su2.idPersonaje
+      WHERE s.numero_room IN (?)`,
+      [rooms]
+    );
+
+    // 3️⃣ Formatear la info con resultado (ganó o perdió)
+    const historial = partidas.map(p => ({
+      contrincante: p.jugador1 === idUsuario ? p.jugador2 : p.jugador1,
+      resultado: p.idGanador === parseInt(idUsuario) ? "Victoria" : "Derrota",
+      personajeGanador: p.idGanador === p.su1_idUsuario ? p.personaje1 : p.personaje2,
+      personajePerdedor: p.idGanador === p.su1_idUsuario ? p.personaje2 : p.personaje1,
+    }));
+
+    res.json(historial);
   } catch (error) {
-    console.error("Error al obtener el historial de partidas:", error);
-    res.status(500).send("Error al obtener el historial de partidas");
+    console.error("Error al obtener historial:", error);
+    res.status(500).json({ error: "Error al obtener historial de partidas" });
   }
 });
 
