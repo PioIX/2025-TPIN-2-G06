@@ -136,6 +136,7 @@ export default function Home() {
         } else {
           console.log("Perdiste");
           setGanador("perdiste")
+          setPerdedor()
         }
       }
     });
@@ -530,36 +531,47 @@ export default function Home() {
           idGanador: idUsuario,
         }),
       });
-
-      const data = await response.json();
-
-      if (data.idPersonaje) {
-        setIdPersonajeRival(data.idPersonaje);
-        const rival = await encontrarP(data.idPersonaje);
-        setPersonajeRival(rival);
-        console.log("ID Personaje Rival:", data.idPersonaje);
-      }
     } catch (err) {
       console.error(err);
     }
   }
 
-return (
-  <main className="contenedor">
-    {personaje && personajeRival ? (
-      !chequeoGandor ? (
-        <div>
-          <div className={flashRojo.yo ? 'flash-rojo' : ''}>
-            <Personaje
-              className="personajePropio"
-              nombre={personaje.nombre}
-              imagen={personaje.fotoPersonaje}
-              saludMax={personaje.saludMax}
-              saludActual={personaje.saludActual}
-              energiaMax={personaje.energiaMax}
-              energiaActual={personaje.energiaActual}
-            />
-          </div>
+  async function setPerdedor() {
+    try {
+      const response = await fetch("http://localhost:4000/setearPerdedor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero_room: idRoom,
+          idPerdedor: idUsuario,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  return (
+    <div
+      className={clsx("contenedor", {
+        "fondo-victoria": ganador === "gane",  // Fondo para victoria
+        "fondo-derrota": ganador === "perdiste",  // Fondo para derrota
+      })}
+    >
+      {personaje && personajeRival ? (
+        !chequeoGandor ? (
+          <div>
+            <div className={flashRojo.yo ? 'flash-rojo' : ''}>
+              <Personaje
+                className="personajePropio"
+                nombre={personaje.nombre}
+                imagen={personaje.fotoPersonaje}
+                saludMax={personaje.saludMax}
+                saludActual={personaje.saludActual}
+                energiaMax={personaje.energiaMax}
+                energiaActual={personaje.energiaActual}
+              />
+            </div>
 
             <div className={flashRojo.rival ? "flash-rojo" : ""}>
               <Personaje
@@ -597,49 +609,26 @@ return (
           <p>Esperando resultado...</p>
         )
       ) : (
-        <div
-          className={clsx("resultado", {
-            gane: ganador === "gane",
-            perdiste: ganador === "perdiste",
-            empate: ganador === "empate",
-          })}
-        >
-
-
-          {ganador === "gane" && (
-            <div>
-              <p className="victoria-text">¡Ganaste!</p>
-              <img src={personaje.fotoPersonaje} alt={personaje.fotoPersonaje} className={"imagenGanador"} />
-              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
-            </div>
-          )}
-          {ganador === "perdiste" && (
-            <div>
-              <p className="derrota-text">¡Perdiste!</p>
-              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
-            </div>
-          )}
-          {ganador === "empate" && (
-            <div>
-              <p>¡Han empatado!</p>
-              <Button text={"Volver"} onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)} />
-            </div>
-          )}
+        <div className={styles.roomInfoContainer}>
+          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+          <p>Cargando personaje...</p>
         </div>
-      )
-    ) : (
-      <div className={styles.roomInfoContainer}>
-        <p>El id de la sala es: {searchParams.get("idRoom")}</p>
-        <p>Cargando personaje...</p>
-      </div>
-    )}
+      )}
 
-    {/* Modal de Energía Insuficiente */}
-    {mensajeError && mostrarModal && (
-      <div className="modalERROR">
-        <p>{mensajeError}</p>
-        <div className="bar-container">
-          <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+      {/* Modal de Energía Insuficiente */}
+      {mensajeError && mostrarModal && (
+        <div className="modalERROR">
+          <p>{mensajeError}</p>
+          <div className="bar-container">
+            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificación de Combate */}
+      {mostrarNotificacion && (
+        <div className={`notificacion-combate ${tipoNotificacion}`}>
+          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
         </div>
       )}
 

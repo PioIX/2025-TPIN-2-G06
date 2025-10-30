@@ -24,7 +24,9 @@ export default function MenuGeneral() {
 
   return (
     <div className={styles.menuGeneralWrapper}>
-      <div className={styles.menuGeneralLogo}>🤼</div>
+      <div className={styles.menuGeneralLogo}>
+        <img src="/images/logo.png"></img>
+      </div>
       <h1 className={styles.menuGeneralTitle}>Kombat Pio</h1>
       <h2 className={styles.menuGeneralSubtitle}>
         {nombre ? `¡Bienvenido, ${nombre}!` : "Seleccione una opción:"}

@@ -12,86 +12,40 @@
   color: #fff;
   overflow: hidden;
   position: relative;
-  background: radial-gradient(circle at center, #3b82f6, #111827 70%);
-  animation: globalFadeIn 1s ease-out, backgroundShift 10s infinite alternate ease-in-out;
+  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
+  animation: moveBackground 10s linear infinite; /* Fondo suave en movimiento */
 }
 
-@keyframes globalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes backgroundShift {
+@keyframes moveBackground {
   0% {
-    background: radial-gradient(circle at top left, #9333ea, #0f172a 70%);
+    background-position: 0% 50%;
   }
   50% {
-    background: radial-gradient(circle at bottom right, #3b82f6, #111827 70%);
+    background-position: 100% 50%;
   }
   100% {
-    background: radial-gradient(circle at center, #22d3ee, #0f172a 70%);
+    background-position: 0% 50%;
   }
-}
-
-/* ==== GALAXIA DE FONDO ==== */
-.menuGeneralWrapper::before,
-.menuGeneralWrapper::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* estrellas fijas */
-.menuGeneralWrapper::before {
-  background: radial-gradient(white 1px, transparent 1px);
-  background-size: 3px 3px;
-  opacity: 0.05;
-  animation: moveStars 60s linear infinite;
-}
-
-/* nebulosa suave */
-.menuGeneralWrapper::after {
-  background: radial-gradient(circle at 30% 40%, rgba(147, 51, 234, 0.25), transparent 70%),
-              radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.25), transparent 70%);
-  animation: nebulaShift 20s ease-in-out infinite alternate;
-  opacity: 0.4;
-}
-
-@keyframes moveStars {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
-}
-
-@keyframes nebulaShift {
-  0% { transform: scale(1) translate(0, 0); filter: hue-rotate(0deg); }
-  50% { transform: scale(1.05) translate(10px, -10px); filter: hue-rotate(45deg); }
-  100% { transform: scale(1) translate(0, 0); filter: hue-rotate(0deg); }
 }
 
 /* ==== LOGO ==== */
 .menuGeneralLogo {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 12%; /* Tamaño adecuado */
+  height: 100%; /* Tamaño adecuado */
+  border-radius: 50%; /* Circular */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #9333ea, #3b82f6);
-  box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
-  margin-bottom: 1.5rem;
-  z-index: 1;
-  animation: popIn 0.8s ease-out, float 3s ease-in-out infinite, glowPulse 2.5s infinite alternate;
+  background: linear-gradient(135deg, #7ec8f2, #f1c27d); /* Gradiente suave entre azul claro y un tono cálido */
+  box-shadow: 0 0 20px rgba(126, 200, 242, 0.4); /* Sombra sutil en azul claro */
+  margin-bottom: 2rem;
+  animation: popIn 0.8s ease-out, float 3s ease-in-out infinite;
+}
+
+.menuGeneralLogo img {
+  width: 80%; /* Ajusta el tamaño de la imagen dentro del logo */
+  height: 80%; /* Ajusta el tamaño */
+  border-radius: 50%; /* Asegura que la imagen también sea circular */
 }
 
 @keyframes popIn {
@@ -105,42 +59,31 @@
   50% { transform: translateY(-10px); }
 }
 
-@keyframes glowPulse {
-  from { box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
-  to { box-shadow: 0 0 40px rgba(59, 130, 246, 0.9); }
-}
-
 /* ==== TÍTULO ==== */
 .menuGeneralTitle {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 800;
-  margin-bottom: 0.25rem;
-  z-index: 1;
-  background: linear-gradient(90deg, #3b82f6, #a855f7, #22d3ee);
-  background-size: 200% 100%;
-  background-position: 0% 50%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s infinite linear;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4), 0 0 15px rgba(255, 255, 255, 0.3); /* Sombra suave */
+  animation: shimmer 2.5s infinite linear;
 }
 
 @keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.4); }
+  50% { text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+  100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.4); }
 }
 
 /* ==== SUBTÍTULO ==== */
 .menuGeneralSubtitle {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
   color: #e5e7eb;
   opacity: 0.9;
-  animation: fadeInUp 0.8s ease-out forwards;
   z-index: 1;
+  animation: fadeInUp 0.8s ease-out forwards;
 }
 
 @keyframes fadeInUp {
@@ -161,15 +104,15 @@
 
 .menuGeneralBtn {
   padding: 1rem 2rem;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #9333ea, #3b82f6);
+  background: linear-gradient(135deg, #7ec8f2, #f1c27d); /* Gradiente más suave entre azul claro y cálido */
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 5px 15px rgba(126, 200, 242, 0.3); /* Sombra sutil */
   position: relative;
   overflow: hidden;
 }
@@ -189,8 +132,8 @@
 
 .menuGeneralBtn:hover {
   transform: translateY(-4px) scale(1.08);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.7);
-  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+  box-shadow: 0 10px 25px rgba(126, 200, 242, 0.5); /* Sombra más marcada */
+  background: linear-gradient(135deg, #f1c27d, #7ec8f2); /* Inversión suave del gradiente */
 }
 
 /* ==== LOGOUT ==== */

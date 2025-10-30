@@ -10,7 +10,7 @@ body {
   width: 100%;
   font-family: 'Poppins', sans-serif;
   color: #f9fafb;
-  background: linear-gradient(135deg, #1f2937, #111827);
+  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
 }
 
 /* ===================== */
@@ -23,11 +23,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1f2937, #111827);
+  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
 }
 
 .loginContainer {
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #4d7d99, #b39262); /* Gradiente suave entre azul claro y un tono cálido */
   backdrop-filter: blur(20px);
   border-radius: 18px;
   padding: 2.5rem;
@@ -209,7 +209,6 @@ input:focus {
   width: 90%;
   max-width: 800px;
   margin: 2rem auto;
-  background: linear-gradient(135deg, #1f2937, #111827);
   backdrop-filter: blur(20px);
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -252,7 +251,7 @@ input:focus {
 }
 
 .rankingTable tr:hover {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(104, 114, 255, 0.25);
   transition: background 0.3s ease;
 }
 
@@ -260,14 +259,36 @@ input:focus {
 /* ======= JUEGO ======= */
 /* ===================== */
 
+/* styles/globals.css (o el archivo CSS correspondiente) */
 .contenedor {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100vh; /* Asegura que el contenedor ocupe toda la altura de la pantalla */
   overflow: hidden;
   margin: 0;
   padding: 0;
+  background-image: url("https://donboscosur.org/wp-content/uploads/2020/12/Archivo_013.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
+
+.fondo-victoria {
+  background-image: url("/images/fondoVictoria.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.fondo-derrota {
+  background-image: url("/images/fondoDerrrota.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+
 
 .personajeRival {
   position: absolute;
@@ -621,84 +642,17 @@ input:focus {
 /* ===================== */
 
 .resultado {
-  display: flex; /* Usar flex para alinear los elementos */
-  flex-direction: column; /* Apilar los elementos verticalmente */
-  justify-content: center; /* Centrar verticalmente */
-  align-items: center; /* Centrar horizontalmente */
-  min-height: 100vh; /* Tomar al menos toda la altura de la ventana */
-  font-size: 2rem;
-  font-weight: 600;
-  text-align: center;
-  position: relative;
-  border-radius: 12px;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  animation: fadeIn 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Alinea al fondo */
+  align-items: center; /* Centra horizontalmente */
+  height: 100%; /* Asegura que ocupe toda la altura */
+  padding-bottom: 30px; /* Da un pequeño margen al fondo */
 }
 
 .resultado div {
-  margin-bottom: 20px; /* Espacio entre los bloques de resultado */
-}
-
-.imagenGanador {
-  width: 20%; 
-  height: auto; /* Deja que la altura se ajuste automáticamente */
-  border-radius: 8px;
-  margin-top: 15px; /* Espacio arriba de la imagen */
-  object-fit: contain; /* Asegura que la imagen no se deforme y mantenga su aspecto */
-}
-
-.gane, .perdiste, .empate {
-  padding: 20px; /* Espacio interno adicional */
-  margin: 10px 0; /* Márgenes entre los bloques */
-  width: 100%; /* Asegura que el bloque ocupe todo el ancho disponible */
-}
-
-.victoria-text, .derrota-text {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 0 10px #4caf50, 0 0 20px #4caf50;
-}
-
-.fireworks {
-  position: absolute;
-  top: 10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  z-index: 999;
-}
-
-.message {
-  position: relative;
-  z-index: 999;
-}
-
-.gane {
-  background: rgba(0, 0, 0, 0.8);
-  color: #00ff55;
-  box-shadow: 0 0 20px 5px #4caf50, 0 0 30px 10px #4caf50, 0 0 50px 15px #4caf50;
-  text-shadow: 0 0 5px #4caf50, 0 0 10px #4caf50, 0 0 15px #4caf50;
-}
-
-.perdiste {
-  background: rgba(0, 0, 0, 0.8);
-  color: #ff0000;
-  box-shadow: 0 0 20px 5px #f44336, 0 0 30px 10px #f44336, 0 0 50px 15px #f44336;
-  text-shadow: 0 0 5px #f44336, 0 0 10px #f44336, 0 0 15px #f44336;
-}
-
-.empate {
-  background: rgba(0, 0, 0, 0.8);
-  color: #ffc400;
-  box-shadow: 0 0 20px 5px #ffa500, 0 0 30px 10px #ffa500, 0 0 50px 15px #ffa500;
-  text-shadow: 0 0 5px #ffa500, 0 0 10px #ffa500, 0 0 15px #ffa500;
-}
-
-.derrota-text {
-  font-size: 3rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 0 10px #ff0000, 0 0 20px #8a0000;
+  width: 100%; /* Asegura que los divs se alineen correctamente */
+  display: flex;
+  justify-content: center; /* Centra el contenido (botón) */
+  margin-bottom: 5%;
 }
