@@ -27,9 +27,10 @@ export default function HistorialPartidas() {
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:4000/obtenerHistorial?idUsuario=${idUsuario}`);
+      console.log("Respuesta del servidor:", response);
       if (!response.ok) throw new Error("Error al obtener historial");
-      const data = await response.json();
-      setPartidas(data);
+        const data = await response.json();
+        setPartidas(data);
     } catch (error) {
       console.error("Error al obtener el historial de partidas:", error);
     } finally {

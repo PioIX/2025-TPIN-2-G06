@@ -97,19 +97,18 @@ app.get("/obtenerHistorial", async (req, res) => {
 
   try {
     // 1️⃣ Buscar todas las salas donde participó el usuario
-    const [salasUsuario] = await db.query(
-      `SELECT numero_room FROM Sala_Usuarios WHERE idUsuario = ?`,
+    const salasUsuario = await realizarQuery(
+      `SELECT numero_room FROM Sala_Usuarios WHERE idUsuario = ?`, 
       [idUsuario]
     );
 
-    if (salasUsuario.length === 0) return res.json([]);
+    if (salasUsuario.length === 0) return res.json([]); // No hay salas
 
     const rooms = salasUsuario.map(s => s.numero_room);
 
-    // 2️⃣ Buscar datos de esas salas y sus jugadores
-    const [partidas] = await db.query(
-      `
-      SELECT 
+    // 2️⃣ Buscar los detalles de esas salas y los jugadores
+    const partidas = await realizarQuery(
+      `SELECT 
         s.numero_room,
         s.idGanador,
         u1.nombre AS jugador1,
@@ -123,16 +122,18 @@ app.get("/obtenerHistorial", async (req, res) => {
       JOIN Usuarios u2 ON u2.idUsuario = su2.idUsuario
       JOIN Personajes p1 ON p1.idPersonaje = su1.idPersonaje
       JOIN Personajes p2 ON p2.idPersonaje = su2.idPersonaje
-      WHERE s.numero_room IN (?)`,
+      WHERE s.numero_room IN (?)`, 
       [rooms]
     );
+    console.log('Salas donde participó el usuario:', rooms);
 
-    // 3️⃣ Formatear la info con resultado (ganó o perdió)
+
+    // 3️⃣ Formatear el resultado de la partida
     const historial = partidas.map(p => ({
       contrincante: p.jugador1 === idUsuario ? p.jugador2 : p.jugador1,
       resultado: p.idGanador === parseInt(idUsuario) ? "Victoria" : "Derrota",
-      personajeGanador: p.idGanador === p.su1_idUsuario ? p.personaje1 : p.personaje2,
-      personajePerdedor: p.idGanador === p.su1_idUsuario ? p.personaje2 : p.personaje1,
+      personajeGanador: p.idGanador === parseInt(idUsuario) ? p.personaje1 : p.personaje2,
+      personajePerdedor: p.idGanador === parseInt(idUsuario) ? p.personaje2 : p.personaje1,
     }));
 
     res.json(historial);
@@ -141,6 +142,7 @@ app.get("/obtenerHistorial", async (req, res) => {
     res.status(500).json({ error: "Error al obtener historial de partidas" });
   }
 });
+
 
 
 app.post('/encontrarPersonaje', async function (req, res) {
