@@ -551,101 +551,93 @@ export default function Home() {
     }
   }
 
-  return (
-    <div
-      className={clsx("contenedor", {
-        "fondo-victoria": ganador === "gane",  // Fondo para victoria
-        "fondo-derrota": ganador === "perdiste",  // Fondo para derrota
-      })}
-    >
-      {personaje && personajeRival ? (
-        !chequeoGandor ? (
-          <div>
-            <div className={flashRojo.yo ? 'flash-rojo' : ''}>
-              <Personaje
-                className="personajePropio"
-                nombre={personaje.nombre}
-                imagen={personaje.fotoPersonaje}
-                saludMax={personaje.saludMax}
-                saludActual={personaje.saludActual}
-                energiaMax={personaje.energiaMax}
-                energiaActual={personaje.energiaActual}
-              />
-            </div>
-
-            <div className={flashRojo.rival ? "flash-rojo" : ""}>
-              <Personaje
-                className="personajeRival"
-                nombre={personajeRival.nombre}
-                imagen={personajeRival.fotoPersonaje}
-                saludMax={personajeRival.saludMax}
-                saludActual={personajeRival.saludActual}
-              />
-            </div>
-
-            {numerosFlotantes.map((num) => (
-              <div
-                key={num.id}
-                className="numero-flotante"
-                style={{
-                  left: num.esRival ? "75%" : "25%",
-                  top: "40%",
-                }}
-              >
-                -{num.daño}
-              </div>
-            ))}
-
-            <div className="menu">
-              <MenuPelea
-                empieza={empieza}
-                ataques={personaje.habilidades}
-                probabilidadEsquivar={personaje.velocidad}
-                onClick={ejecutarHabilidad}
-              />
-            </div>
+return (
+  <div
+    className={clsx("contenedor", {
+      "fondo-victoria": ganador === "gane",  // Fondo para victoria
+      "fondo-derrota": ganador === "perdiste",  // Fondo para derrota
+    })}
+  >
+    {personaje && personajeRival ? (
+      !chequeoGandor ? (
+        <div>
+          <div className={flashRojo.yo ? 'flash-rojo' : ''}>
+            <Personaje
+              className="personajePropio"
+              nombre={personaje.nombre}
+              imagen={personaje.fotoPersonaje}
+              saludMax={personaje.saludMax}
+              saludActual={personaje.saludActual}
+              energiaMax={personaje.energiaMax}
+              energiaActual={personaje.energiaActual}
+            />
           </div>
-        ) : (
-          <p>Esperando resultado...</p>
-        )
+
+          <div className={flashRojo.rival ? "flash-rojo" : ""}>
+            <Personaje
+              className="personajeRival"
+              nombre={personajeRival.nombre}
+              imagen={personajeRival.fotoPersonaje}
+              saludMax={personajeRival.saludMax}
+              saludActual={personajeRival.saludActual}
+            />
+          </div>
+
+          {numerosFlotantes.map((num) => (
+            <div
+              key={num.id}
+              className="numero-flotante"
+              style={{
+                left: num.esRival ? "75%" : "25%",
+                top: "40%",
+              }}
+            >
+              -{num.daño}
+            </div>
+          ))}
+
+          <div className="menu">
+            <MenuPelea
+              empieza={empieza}
+              ataques={personaje.habilidades}
+              probabilidadEsquivar={personaje.velocidad}
+              onClick={ejecutarHabilidad}
+            />
+          </div>
+        </div>
       ) : (
-        <div className={styles.roomInfoContainer}>
-          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
-          <p>Cargando personaje...</p>
-        </div>
-      )}
-
-      {/* Modal de Energía Insuficiente */}
-      {mensajeError && mostrarModal && (
-        <div className="modalERROR">
-          <p>{mensajeError}</p>
-          <div className="bar-container">
-            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+        <div className={"resultado"}>
+          <div>
+            <Button
+              text={"Volver"}
+              onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)}
+            />
           </div>
         </div>
-      )}
+      )
+    ) : (
+      <div className={styles.roomInfoContainer}>
+        <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+        <p>Cargando personaje...</p>
+      </div>
+    )}
 
-      {/* Notificación de Combate */}
-      {mostrarNotificacion && (
-        <div className={`notificacion-combate ${tipoNotificacion}`}>
-          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
+    {/* Modal de Energía Insuficiente */}
+    {mensajeError && mostrarModal && (
+      <div className="modalERROR">
+        <p>{mensajeError}</p>
+        <div className="bar-container">
+          <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
         </div>
-      )}
+      </div>
+    )}
 
-      {mensajeError && mostrarModal && (
-        <div className="modalERROR">
-          <p>{mensajeError}</p>
-          <div className="bar-container">
-            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
-          </div>
-        </div>
-      )}
-
-      {mostrarNotificacion && (
-        <div className={`notificacion-combate ${tipoNotificacion}`}>
-          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
-        </div>
-      )}
-    </main>
-  );
+    {/* Notificación de Combate */}
+    {mostrarNotificacion && (
+      <div className={`notificacion-combate ${tipoNotificacion}`}>
+        <div className="notificacion-mensaje">{mensajeNotificacion}</div>
+      </div>
+    )}
+  </div>
+);
 }
