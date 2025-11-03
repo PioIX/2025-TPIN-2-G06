@@ -167,6 +167,33 @@ app.post('/encontrarPersonaje', async function (req, res) {
     }
 });
 
+
+app.post('/desactivarSala', async function (req, res) {
+    try {
+        const { numero_room } = req.body;
+        
+        console.log(`🔒 Desactivando sala ${numero_room}`);
+        
+        const result = await realizarQuery(`
+            UPDATE Salas
+            SET esta_activa = 0
+            WHERE numero_room = '${numero_room}';
+        `);
+
+        res.send({
+            res: "Sala desactivada correctamente",
+            validar: true
+        });
+
+    } catch (error) {
+        console.error("Error al desactivar la sala:", error);
+        res.status(500).send({
+            res: "Error al procesar la solicitud",
+            validar: false
+        });
+    }
+});
+
 app.post("/obtenerPersonajeOtroJugador", async (req, res) => {
     try {
         const idRoom = req.body.idRoom;

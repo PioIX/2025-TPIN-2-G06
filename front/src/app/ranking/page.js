@@ -2,12 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "@/app/ranking/ranking.module.css";  // Importar el CSS Module
+import Button from "@/components/Button";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Ranking() {
   const [jugadores, setJugadores] = useState([]);
-
+  const searchParams = useSearchParams();
+  const router = useRouter();
   useEffect(() => {
     obtenerJugadores();
+    const idUsuario = searchParams.get("idUsuario");
   }, []);
 
   async function obtenerJugadores() {
@@ -33,31 +37,40 @@ export default function Ranking() {
     }
   }
 
+  function volverAlMenu() {
+    router.push(`/menuGeneral?idUsuario=${idUsuario}`);
+  }
   return (
-    <div className={styles.rankingWrapper}>
-      <h1>Ranking Top 10 Jugadores</h1>
-      <table className={styles.rankingTable}>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Victorias</th>
-            <th>Derrotas</th>
-            <th>Total Partidas</th>
-            <th>Win Rate (%)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {jugadores.map(j => (
-            <tr key={j.idUsuario}>
-              <td>{j.nombre}</td>
-              <td>{j.victorias}</td>
-              <td>{j.derrotas}</td>
-              <td>{j.total}</td>
-              <td>{j.winRate.toFixed(2)}</td>
+    <>
+      <div className={styles.rankingWrapper}>
+        <h1>Ranking Top 10 Jugadores</h1>
+        <table className={styles.rankingTable}>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Victorias</th>
+              <th>Derrotas</th>
+              <th>Total Partidas</th>
+              <th>Win Rate (%)</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {jugadores.map(j => (
+              <tr key={j.idUsuario}>
+                <td>{j.nombre}</td>
+                <td>{j.victorias}</td>
+                <td>{j.derrotas}</td>
+                <td>{j.total}</td>
+                <td>{j.winRate.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className={styles.volverMenuGeneral}>
+        <Button text="Volver" onClick={volverAlMenu} />
+      </div>
+    </>
+
   );
 }

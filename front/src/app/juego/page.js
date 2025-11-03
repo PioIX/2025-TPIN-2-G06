@@ -41,7 +41,7 @@ export default function Home() {
   const [tipoNotificacion, setTipoNotificacion] = useState("");
   const [flashRojo, setFlashRojo] = useState({ yo: false, rival: false });
   const [numerosFlotantes, setNumerosFlotantes] = useState([]);
-  
+
   // NUEVO: Flag para saber si el juego ya empezó
   const [juegoIniciado, setJuegoIniciado] = useState(false);
   const registradoEnPartida = useRef(false);
@@ -81,7 +81,7 @@ export default function Home() {
     if (!idRoom || !idUsuario) return;
 
     socket.emit("joinRoom", { room: idRoom });
-    
+
     let habRivalTemp = {};
     const empiezaParam = searchParams.get("empieza");
     setEmpieza(empiezaParam === "true");
@@ -129,28 +129,34 @@ export default function Home() {
         setChequeoGanador(true)
         setGanador("gane")
         actualizarSalas()
+        desactivarSala()
       } else {
         setChequeoGanador(true)
         if (ganador == "gane") {
           setGanador("empate")
+          desactivarSala()
         } else {
           console.log("Perdiste");
           setGanador("perdiste")
           setPerdedor()
+          desactivarSala()
         }
       }
     });
 
+
+
     socket.on("partidaCancelada", (data) => {
       console.warn("❌ Partida cancelada:", data.motivo);
-      alert("La partida fue cancelada porque el otro jugador se desconectó.");
-      
+      alert("desconexión detectada, partida cancelada");
+
       // Desregistrar antes de salir
       if (registradoEnPartida.current) {
         socket.emit("salirDePartida", { idUsuario });
         registradoEnPartida.current = false;
+        desactivarSala()
       }
-      
+
       router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
     });
 
@@ -190,29 +196,29 @@ export default function Home() {
 
     // Crear una key única para esta partida específica
     const keyPartida = `partida_${idRoom}_${idUsuario}`;
-    
+
     // Verificar si esta partida fue marcada como interrumpida
     const partidaInterrumpida = sessionStorage.getItem(keyPartida);
 
     if (partidaInterrumpida === "true") {
       console.log("⚠️ Recarga detectada durante el juego");
       yaDetectoRecarga.current = true;
-      
+
       // Limpiar el flag INMEDIATAMENTE
       sessionStorage.removeItem(keyPartida);
-      
+
       if (socket && idUsuario && idRoom && registradoEnPartida.current) {
         // Notificar al backend para que avise a AMBOS jugadores
-        socket.emit("jugadorRecargo", { 
-          room: idRoom, 
-          idUsuario: idUsuario 
+        socket.emit("jugadorRecargo", {
+          room: idRoom,
+          idUsuario: idUsuario
         });
-        
+
         socket.emit("salirDePartida", { idUsuario });
         registradoEnPartida.current = false;
       }
+
       
-      alert("Has recargado la página. La partida fue cancelada.");
       router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
       return;
     }
@@ -282,6 +288,23 @@ export default function Home() {
     }
   }
 
+  // Agregar esta función después de setPerdedor()
+  async function desactivarSala() {
+    try {
+      const response = await fetch("http://localhost:4000/desactivarSala", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numero_room: idRoom,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("✅ Sala desactivada:", data);
+    } catch (err) {
+      console.error("❌ Error al desactivar sala:", err);
+    }
+  }
   async function encontrarIdRival() {
     try {
       const response = await fetch(
@@ -402,7 +425,7 @@ export default function Home() {
     // Limpiar el flag de esta partida antes de salir
     const keyPartida = `partida_${idRoom}_${idUsuario}`;
     sessionStorage.removeItem(keyPartida);
-    
+
     // Desregistrar antes de salir normalmente
     if (registradoEnPartida.current && socket && idUsuario) {
       socket.emit("salirDePartida", { idUsuario });
@@ -551,93 +574,93 @@ export default function Home() {
     }
   }
 
-return (
-  <div
-    className={clsx("contenedor", {
-      "fondo-victoria": ganador === "gane",  // Fondo para victoria
-      "fondo-derrota": ganador === "perdiste",  // Fondo para derrota
-    })}
-  >
-    {personaje && personajeRival ? (
-      !chequeoGandor ? (
-        <div>
-          <div className={flashRojo.yo ? 'flash-rojo' : ''}>
-            <Personaje
-              className="personajePropio"
-              nombre={personaje.nombre}
-              imagen={personaje.fotoPersonaje}
-              saludMax={personaje.saludMax}
-              saludActual={personaje.saludActual}
-              energiaMax={personaje.energiaMax}
-              energiaActual={personaje.energiaActual}
-            />
-          </div>
-
-          <div className={flashRojo.rival ? "flash-rojo" : ""}>
-            <Personaje
-              className="personajeRival"
-              nombre={personajeRival.nombre}
-              imagen={personajeRival.fotoPersonaje}
-              saludMax={personajeRival.saludMax}
-              saludActual={personajeRival.saludActual}
-            />
-          </div>
-
-          {numerosFlotantes.map((num) => (
-            <div
-              key={num.id}
-              className="numero-flotante"
-              style={{
-                left: num.esRival ? "75%" : "25%",
-                top: "40%",
-              }}
-            >
-              -{num.daño}
-            </div>
-          ))}
-
-          <div className="menu">
-            <MenuPelea
-              empieza={empieza}
-              ataques={personaje.habilidades}
-              probabilidadEsquivar={personaje.velocidad}
-              onClick={ejecutarHabilidad}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className={"resultado"}>
+  return (
+    <div
+      className={clsx("contenedor", {
+        "fondo-victoria": ganador === "gane",  // Fondo para victoria
+        "fondo-derrota": ganador === "perdiste",  // Fondo para derrota
+      })}
+    >
+      {personaje && personajeRival ? (
+        !chequeoGandor ? (
           <div>
-            <Button
-              text={"Volver"}
-              onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)}
-            />
+            <div className={flashRojo.yo ? 'flash-rojo' : ''}>
+              <Personaje
+                className="personajePropio"
+                nombre={personaje.nombre}
+                imagen={personaje.fotoPersonaje}
+                saludMax={personaje.saludMax}
+                saludActual={personaje.saludActual}
+                energiaMax={personaje.energiaMax}
+                energiaActual={personaje.energiaActual}
+              />
+            </div>
+
+            <div className={flashRojo.rival ? "flash-rojo" : ""}>
+              <Personaje
+                className="personajeRival"
+                nombre={personajeRival.nombre}
+                imagen={personajeRival.fotoPersonaje}
+                saludMax={personajeRival.saludMax}
+                saludActual={personajeRival.saludActual}
+              />
+            </div>
+
+            {numerosFlotantes.map((num) => (
+              <div
+                key={num.id}
+                className="numero-flotante"
+                style={{
+                  left: num.esRival ? "75%" : "25%",
+                  top: "40%",
+                }}
+              >
+                -{num.daño}
+              </div>
+            ))}
+
+            <div className="menu">
+              <MenuPelea
+                empieza={empieza}
+                ataques={personaje.habilidades}
+                probabilidadEsquivar={personaje.velocidad}
+                onClick={ejecutarHabilidad}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className={"resultado"}>
+            <div>
+              <Button
+                text={"Volver"}
+                onClick={() => router.replace(`/menuGeneral?idUsuario=${idUsuario}`)}
+              />
+            </div>
+          </div>
+        )
+      ) : (
+        <div className={styles.roomInfoContainer}>
+          <p>El id de la sala es: {searchParams.get("idRoom")}</p>
+          <p>Cargando personaje...</p>
+        </div>
+      )}
+
+      {/* Modal de Energía Insuficiente */}
+      {mensajeError && mostrarModal && (
+        <div className="modalERROR">
+          <p>{mensajeError}</p>
+          <div className="bar-container">
+            <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
           </div>
         </div>
-      )
-    ) : (
-      <div className={styles.roomInfoContainer}>
-        <p>El id de la sala es: {searchParams.get("idRoom")}</p>
-        <p>Cargando personaje...</p>
-      </div>
-    )}
+      )}
 
-    {/* Modal de Energía Insuficiente */}
-    {mensajeError && mostrarModal && (
-      <div className="modalERROR">
-        <p>{mensajeError}</p>
-        <div className="bar-container">
-          <div className="bar" style={{ width: `${barraProgreso}%` }}></div>
+      {/* Notificación de Combate */}
+      {mostrarNotificacion && (
+        <div className={`notificacion-combate ${tipoNotificacion}`}>
+          <div className="notificacion-mensaje">{mensajeNotificacion}</div>
         </div>
-      </div>
-    )}
-
-    {/* Notificación de Combate */}
-    {mostrarNotificacion && (
-      <div className={`notificacion-combate ${tipoNotificacion}`}>
-        <div className="notificacion-mensaje">{mensajeNotificacion}</div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
 }

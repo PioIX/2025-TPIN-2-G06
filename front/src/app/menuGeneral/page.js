@@ -35,7 +35,7 @@ export default function MenuGeneral() {
       <div className={styles.menuGeneralButtons}>
         <button
           className={styles.menuGeneralBtn}
-          onClick={() => router.push("/ranking")}
+          onClick={() => router.push(`/ranking?idUsuario=${idUsuario}`)}
         >
           Ver Ranking
         </button>

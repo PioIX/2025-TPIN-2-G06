@@ -15,6 +15,12 @@
     align-items: center;
 }
 
+.volverMenuGeneral {
+  opacity: 0.85;
+  animation: fadeIn 1s ease-out;
+  z-index: 1;
+}
+
 .rankingWrapper h1 {
     font-size: 2.5rem;
     font-weight: 700;
