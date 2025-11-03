@@ -49,6 +49,12 @@ export default function MenuGeneral() {
         >
           Jugar
         </button>
+        <button
+          className={styles.menuGeneralBtn}
+          onClick={() => router.push(`/tutorial?idUsuario=${idUsuario}`)}
+        >
+          Tutorial
+        </button>
       </div>
 
       <div className={styles.menuGeneralLogout}>
