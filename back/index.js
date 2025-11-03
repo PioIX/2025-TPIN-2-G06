@@ -93,56 +93,74 @@ app.get('/obtenerPartidas', async function (req, res) {
 });
 
 app.get("/obtenerHistorial", async (req, res) => {
-  const idUsuario = req.query.idUsuario;
-
   try {
+    const idUsuario = req.query.idUsuario;
+
     // 1️⃣ Buscar todas las salas donde participó el usuario
     const salasUsuario = await realizarQuery(
-      `SELECT numero_room FROM Sala_Usuarios WHERE idUsuario = ?`, 
-      [idUsuario]
+      `SELECT numero_room FROM Sala_Usuarios WHERE idUsuario = ${idUsuario}`, 
     );
 
-    if (salasUsuario.length === 0) return res.json([]); // No hay salas
+    if (!salasUsuario || salasUsuario.length === 0) {
+      console.log("No se encontraron salas para el usuario", idUsuario);
+      return res.json([]); // No hay salas para este usuario
+    }
 
-    const rooms = salasUsuario.map(s => s.numero_room);
+    const rooms = [];
+    for (let i = 0; i < salasUsuario.length; i++) {
+      rooms.push(salasUsuario[i].numero_room);
+    }
 
-    // 2️⃣ Buscar los detalles de esas salas y los jugadores
-    const partidas = await realizarQuery(
-      `SELECT 
-        s.numero_room,
-        s.idGanador,
-        u1.nombre AS jugador1,
-        u2.nombre AS jugador2,
-        p1.nombre AS personaje1,
-        p2.nombre AS personaje2
-      FROM Salas s
-      JOIN Sala_Usuarios su1 ON su1.numero_room = s.numero_room
-      JOIN Sala_Usuarios su2 ON su2.numero_room = s.numero_room AND su1.idUsuario <> su2.idUsuario
-      JOIN Usuarios u1 ON u1.idUsuario = su1.idUsuario
-      JOIN Usuarios u2 ON u2.idUsuario = su2.idUsuario
-      JOIN Personajes p1 ON p1.idPersonaje = su1.idPersonaje
-      JOIN Personajes p2 ON p2.idPersonaje = su2.idPersonaje
-      WHERE s.numero_room IN (?)`, 
-      [rooms]
-    );
-    console.log('Salas donde participó el usuario:', rooms);
+    console.log("Salas donde participó el usuario:", rooms);
+    const historial = [];
 
+    for (let i = 0; i < rooms.length; i++) {
+      const numeroRoom = rooms[i];
+      const partida = await realizarQuery(
+        `SELECT 
+          s.numero_room,
+          s.idGanador,
+          u1.nombre AS jugador1,
+          u2.nombre AS jugador2,
+          p1.nombre AS personaje1,
+          p1.fotoPersonaje AS fotoPersonaje1,  -- Aquí obtenemos la foto del personaje del jugador 1
+          p2.nombre AS personaje2,
+          p2.fotoPersonaje AS fotoPersonaje2   -- Y aquí la foto del personaje del jugador 2
+        FROM Salas s
+        JOIN Sala_Usuarios su1 ON su1.numero_room = s.numero_room
+        JOIN Sala_Usuarios su2 ON su2.numero_room = s.numero_room AND su1.idUsuario <> su2.idUsuario
+        JOIN Usuarios u1 ON u1.idUsuario = su1.idUsuario
+        JOIN Usuarios u2 ON u2.idUsuario = su2.idUsuario
+        JOIN Personajes p1 ON p1.idPersonaje = su1.idPersonaje
+        JOIN Personajes p2 ON p2.idPersonaje = su2.idPersonaje
+        WHERE s.numero_room = ${numeroRoom}
+        LIMIT 1`
+      );
 
-    // 3️⃣ Formatear el resultado de la partida
-    const historial = partidas.map(p => ({
-      contrincante: p.jugador1 === idUsuario ? p.jugador2 : p.jugador1,
-      resultado: p.idGanador === parseInt(idUsuario) ? "Victoria" : "Derrota",
-      personajeGanador: p.idGanador === parseInt(idUsuario) ? p.personaje1 : p.personaje2,
-      personajePerdedor: p.idGanador === parseInt(idUsuario) ? p.personaje2 : p.personaje1,
-    }));
+      if (partida && partida.length > 0) {
+        const p = partida[0];
+
+        const resultado = {
+          contrincante: p.jugador1 === idUsuario ? p.jugador2 : p.jugador1,
+          resultado: p.idGanador === parseInt(idUsuario) ? "Victoria" : "Derrota",
+          personajeGanador: p.idGanador === parseInt(idUsuario) ? p.personaje1 : p.personaje2,
+          personajePerdedor: p.idGanador === parseInt(idUsuario) ? p.personaje2 : p.personaje1,
+          fotoPersonajeGanador: p.idGanador === parseInt(idUsuario) ? p.fotoPersonaje1 : p.fotoPersonaje2, // Foto del ganador
+          fotoPersonajePerdedor: p.idGanador === parseInt(idUsuario) ? p.fotoPersonaje2 : p.fotoPersonaje1  // Foto del perdedor
+        };
+        console.log(resultado)
+
+        historial.push(resultado);
+      }
+    }
 
     res.json(historial);
+
   } catch (error) {
     console.error("Error al obtener historial:", error);
-    res.status(500).json({ error: "Error al obtener historial de partidas" });
+    res.status(500).json({ error: "Error al obtener historial de partidas", details: error.message });
   }
 });
-
 
 
 app.post('/encontrarPersonaje', async function (req, res) {

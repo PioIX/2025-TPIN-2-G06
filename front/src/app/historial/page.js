@@ -27,10 +27,9 @@ export default function HistorialPartidas() {
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:4000/obtenerHistorial?idUsuario=${idUsuario}`);
-      console.log("Respuesta del servidor:", response);
       if (!response.ok) throw new Error("Error al obtener historial");
-        const data = await response.json();
-        setPartidas(data);
+      const data = await response.json();
+      setPartidas(data);
     } catch (error) {
       console.error("Error al obtener el historial de partidas:", error);
     } finally {
@@ -39,14 +38,14 @@ export default function HistorialPartidas() {
   }
 
   if (loading) {
-    return <p>Cargando historial...</p>;
+    return <p className={styles.loading}>Cargando historial...</p>;
   }
 
   return (
     <div className={styles.historialWrapper}>
-      <h1>Historial de Partidas</h1>
+      <h1 className={styles.title}>Historial de Partidas</h1>
       {partidas.length === 0 ? (
-        <p>No se encontraron partidas jugadas.</p>
+        <p className={styles.noData}>No se encontraron partidas jugadas.</p>
       ) : (
         <table className={styles.historialTable}>
           <thead>
@@ -59,11 +58,26 @@ export default function HistorialPartidas() {
           </thead>
           <tbody>
             {partidas.map((p, index) => (
-              <tr key={index}>
+              <tr
+                key={index}
+                className={
+                  p.resultado === "Victoria" ? styles.victoria : p.resultado === "Derrota" ? styles.derrota : ""
+                }
+              >
                 <td>{p.contrincante}</td>
                 <td>{p.resultado}</td>
-                <td>{p.personajeGanador}</td>
-                <td>{p.personajePerdedor}</td>
+                <td>
+                  <div className={styles.personajeContainer}>
+                    <span>{p.personajeGanador}</span>
+                    <img src={p.fotoPersonajeGanador} alt="Personaje Ganador" className={styles.personajeImg} />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.personajeContainer}>
+                    <span>{p.personajePerdedor}</span>
+                    <img src={p.fotoPersonajePerdedor} alt="Personaje Perdedor" className={styles.personajeImg} />
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
