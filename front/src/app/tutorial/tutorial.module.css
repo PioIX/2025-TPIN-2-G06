@@ -1,0 +1,116 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #001428, #002c59);
+  color: #f9fafb;
+  min-height: 100vh;
+  padding-bottom: 40px;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 25px 30px;
+  max-width: 700px;
+  width: 90%;
+  margin-top: 20px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+}
+
+.paso {
+  animation: slideIn 0.5s ease;
+}
+
+.textoExplicacion {
+  margin-top: 10px;
+  color: #cfd8dc;
+  font-size: 1.1em;
+}
+
+.listaStats,
+.listaHabilidades {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.listaStats li {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-left: 4px solid #1e88e5;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.listaHabilidades li{
+  background-color: rgba(0, 0, 0, 0.2);
+  border-left: 4px solid #46e51e;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.listaStats li:hover,
+.listaHabilidades li:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.habilidadCard {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: left;
+  border-left: 4px solid #ffb300;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.botonesHabilidad {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.navegacion {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 25px;
+}
+
+.cargando {
+  color: white;
+  font-size: 1.5em;
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
