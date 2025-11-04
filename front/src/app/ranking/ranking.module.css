@@ -83,6 +83,15 @@
     /* Resaltamos el win rate */
 }
 
+.volverMenuGeneral {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  opacity: 0.85;
+  animation: fadeIn 1s ease-out;
+  z-index: 1;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

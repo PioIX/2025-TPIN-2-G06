@@ -9,9 +9,10 @@ export default function Ranking() {
   const [jugadores, setJugadores] = useState([]);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const idUsuario = searchParams.get("idUsuario");
+  
   useEffect(() => {
     obtenerJugadores();
-    const idUsuario = searchParams.get("idUsuario");
   }, []);
 
   async function obtenerJugadores() {
@@ -40,6 +41,7 @@ export default function Ranking() {
   function volverAlMenu() {
     router.push(`/menuGeneral?idUsuario=${idUsuario}`);
   }
+
   return (
     <>
       <div className={styles.rankingWrapper}>
