@@ -1,0 +1,15 @@
+.botonLogin {
+  background: linear-gradient(45deg, #002e98, #0400e6); /* Un gradiente entre dos tonos de morado */
+  color: white; /* Color del texto */
+  border: 1px solid #000e89; /* Borde morado */
+  padding: 1rem 2rem; /* Padding más cómodo */
+  font-size: 1.2rem; /* Tamaño de fuente mayor */
+  border-radius: 10px; /* Bordes redondeados */
+  cursor: pointer; /* Cambiar a cursor pointer cuando se pasa por encima */
+  transition: all 0.6s ease-in-out; /* Efecto suave al pasar el mouse */
+}
+
+.botonLogin:hover {
+  background: linear-gradient(45deg, #004cff, #00ffe1); /* Gradiente invertido en hover */
+  box-shadow: 0 4px 20px rgb(0, 0, 0); /* Agregar sombra al hacer hover */
+}

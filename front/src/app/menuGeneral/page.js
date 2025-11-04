@@ -34,30 +34,36 @@ export default function MenuGeneral() {
 
       <div className={styles.menuGeneralButtons}>
         <button
-          className={styles.menuGeneralBtn}
-          onClick={() => router.push(`/ranking?idUsuario=${idUsuario}`)}
-        >
-          Ver Ranking
-        </button>
-        <button
-          className={styles.menuGeneralBtn}
-          onClick={() => router.push(`/historial?idUsuario=${idUsuario}`)}
-        >
-          Ver Historial de Partidas
-        </button>
-        <button
-          className={styles.menuGeneralBtn}
+          className={`${styles.menuGeneralBtn} ${styles.jugarBtn}`}
           onClick={() => router.push(`/elegirPersonaje?idUsuario=${idUsuario}`)}
         >
-          Jugar
+          🥊 Jugar
         </button>
-        <button
-          className={styles.menuGeneralBtn}
-          onClick={() => router.push(`/tutorial?idUsuario=${idUsuario}`)}
-        >
-          Tutorial
-        </button>
+
+        {/* Contenedor para los otros botones */}
+        <div className={styles.menuGeneralOtherButtons}>
+          <button
+            className={styles.menuGeneralBtn}
+            onClick={() => router.push(`/ranking?idUsuario=${idUsuario}`)}
+          >
+            Ver Ranking
+          </button>
+          <button
+            className={styles.menuGeneralBtn}
+            onClick={() => router.push(`/historial?idUsuario=${idUsuario}`)}
+          >
+            Ver Historial de Partidas
+          </button>
+          <button
+            className={styles.menuGeneralBtn}
+            onClick={() => router.push(`/tutorial?idUsuario=${idUsuario}`)}
+          >
+            Tutorial
+          </button>
+        </div>
       </div>
+
+
 
       <div className={styles.volverMenuGeneral}>
         <Button text="Cerrar Sesión" onClick={handleLogout} />
