@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import styles from "./login.module.css";
 
 export default function Login() {
   const [email, setMail] = useState("");
@@ -77,9 +78,12 @@ export default function Login() {
             />
           </div>
 
-          <Button type="button" text="Inicar Sesión" onClick={ingresar}>
-            Ingresar
-          </Button>
+          <button
+          className={styles.botonLogin}
+          onClick={ingresar}
+        >
+          Ingresar
+        </button>
 
           <div className="registroRedirect">
             <p>
