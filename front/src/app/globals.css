@@ -10,7 +10,7 @@ body {
   width: 100%;
   font-family: 'Poppins', sans-serif;
   color: #f9fafb;
-  background: radial-gradient(circle at center, #1e43a0, #1b2533); /* Fondo más oscuro, azul grisáceo */
+  background: radial-gradient(circle at center, #00237a, #1b2533); /* Fondo más oscuro, azul grisáceo */
 }
 
 /* ===================== */
@@ -27,7 +27,7 @@ body {
 }
 
 .loginContainer {
-  background: linear-gradient(135deg, #4d7d99, #b39262); /* Gradiente suave entre azul claro y un tono cálido */
+  background: #1b2533; /* Gradiente suave entre azul claro y un tono cálido */
   backdrop-filter: blur(20px);
   border-radius: 18px;
   padding: 2.5rem;
@@ -91,6 +91,8 @@ body {
 .registroLink:hover {
   color: #93c5fd;
 }
+
+
 
 @keyframes fadeIn {
   from {

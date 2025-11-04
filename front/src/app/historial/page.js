@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams,useRouter } from "next/navigation";
 import styles from "@/app/historial/historial.module.css";
+import Button from "@/components/Button";
 
 export default function HistorialPartidas() {
   const searchParams = useSearchParams();
@@ -10,6 +11,8 @@ export default function HistorialPartidas() {
   const [idUsuario, setIdUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState("Todos");
+  const router = useRouter();
+  
 
   useEffect(() => {
     const id = searchParams.get("idUsuario");
@@ -103,6 +106,9 @@ export default function HistorialPartidas() {
           </tbody>
         </table>
       )}
+      <div className={styles.volverMenuGeneral}>
+        <Button text="Volver" onClick={()=>router.push(`/menuGeneral?idUsuario=${idUsuario}`)} />
+      </div>
     </div>
   );
 }

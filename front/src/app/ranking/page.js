@@ -10,6 +10,7 @@ export default function Ranking() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const idUsuario = searchParams.get("idUsuario");
+
   
   useEffect(() => {
     obtenerJugadores();

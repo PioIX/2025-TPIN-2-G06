@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
+import styles from "./registro.module.css";
+
 
 export default function Registro() {
   const [nombre, setNombre] = useState("");
@@ -60,47 +62,50 @@ export default function Registro() {
     <div className="loginWrapper">
       <div className="loginContainer">
         <h1>Registro</h1>
-          <div className="inputGroup">
-            <label htmlFor="nombre">Nombre</label>
-            <Input
-              type="text"
-              placeholder="Juan Pérez"
-              onChange={(e) => setNombre(e.target.value)}
-            />
-          </div>
+        <div className="inputGroup">
+          <label htmlFor="nombre">Nombre</label>
+          <Input
+            type="text"
+            placeholder="Juan Pérez"
+            onChange={(e) => setNombre(e.target.value)}
+          />
+        </div>
 
-          <div className="inputGroup">
-            <label htmlFor="mail">Correo electrónico</label>
-            <Input
-              type="email"
-              placeholder="ejemplo@mail.com"
-              onChange={(e) => setMail(e.target.value)}
-            />
-          </div>
+        <div className="inputGroup">
+          <label htmlFor="mail">Correo electrónico</label>
+          <Input
+            type="email"
+            placeholder="ejemplo@mail.com"
+            onChange={(e) => setMail(e.target.value)}
+          />
+        </div>
 
-          <div className="inputGroup">
-            <label htmlFor="contraseña">Contraseña</label>
-            <Input
-              type="password"
-              placeholder="********"
-              onChange={(e) => setContraseña(e.target.value)}
-            />
-          </div>
+        <div className="inputGroup">
+          <label htmlFor="contraseña">Contraseña</label>
+          <Input
+            type="password"
+            placeholder="********"
+            onChange={(e) => setContraseña(e.target.value)}
+          />
+        </div>
 
-          <Button type="button" text="Registrarse" onClick={registroBack}>
-          </Button>
-
-          <div className="registroRedirect">
-            <p>
-              ¿Ya tienes cuenta?{" "}
-              <span
-                className="registroLink"
-                onClick={() => router.push("/login")}
-              >
-                Iniciar sesión
-              </span>
-            </p>
-          </div>
+        <button
+          className={styles.botonLogin}
+          onClick={registroBack}
+        >
+          Registro
+        </button>
+        <div className="registroRedirect">
+          <p>
+            ¿Ya tienes cuenta?{" "}
+            <span
+              className="registroLink"
+              onClick={() => router.push("/login")}
+            >
+              Iniciar sesión
+            </span>
+          </p>
+        </div>
 
         {/* Modal Popup */}
         {popup.open && (

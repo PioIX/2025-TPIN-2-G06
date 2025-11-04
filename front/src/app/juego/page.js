@@ -527,7 +527,7 @@ export default function Home() {
       );
     }
 
-    // Aplicar daño
+    // Aplicar daño (sin alterar el comportamiento de las habilidades especiales)
     setPersonaje((prevPersonaje) => ({
       ...prevPersonaje,
       saludActual: Math.round(prevPersonaje.saludActual - dañoAplicadoAMi),
@@ -542,7 +542,9 @@ export default function Home() {
 
     // Mostrar notificación
     mostrarNotificacionCombate(mensaje, tipo);
-  }
+}
+
+
 
   async function actualizarSalas() {
     try {
