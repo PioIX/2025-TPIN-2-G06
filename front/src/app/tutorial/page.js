@@ -72,11 +72,10 @@ export default function Tutorial() {
                         <Personaje
                             nombre={personaje.nombre}
                             imagen={personaje.fotoPersonaje}
-                            tipo={personaje.tipo}
-                            salud={personaje.saludActual}
                             saludMax={personaje.saludMax}
-                            energia={personaje.energiaActual}
+                            saludActual={personaje.saludActual}
                             energiaMax={personaje.energiaMax}
+                            energiaActual={personaje.energiaActual}
                         />
                         <p className={styles.textoExplicacion}>
                             Este es tu luchador. Cada personaje tiene un estilo y un rol únicos.
@@ -97,7 +96,7 @@ export default function Tutorial() {
                         </ul>
                         <p className={styles.textoExplicacion}>
                             Las estadísticas determinan tu desempeño en combate. La velocidad
-                            afecta quién ataca primero, la fuerza cuánto daño haces, y la
+                            determina la probabilidad de esquivar un ataque, la fuerza cuánto daño haces, y la
                             energía cuántas habilidades podés usar.
                         </p>
                     </div>
