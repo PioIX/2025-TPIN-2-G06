@@ -36,7 +36,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7ec8f2, #f1c27d); /* Gradiente suave entre azul claro y un tono cálido */
+  background: linear-gradient(135deg, #7ec8f2, #ffc7b6); /* Gradiente suave entre azul claro y un tono cálido */
   box-shadow: 0 0 20px rgba(126, 200, 242, 0.4); /* Sombra sutil en azul claro */
   margin-bottom: 2rem;
   animation: popIn 0.8s ease-out, float 3s ease-in-out infinite;
@@ -94,21 +94,33 @@
 /* ==== BOTONES ==== */
 .menuGeneralButtons {
   display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column; /* Coloca los botones en columna */
+  align-items: center; /* Centra el botón "Jugar" */
   margin-bottom: 2rem;
   animation: fadeIn 0.8s ease-out;
   z-index: 1;
 }
 
+
+/* Contenedor para los otros tres botones, alineados horizontalmente */
+.menuGeneralOtherButtons {
+  display: flex; /* Alinea los botones en una fila */
+  gap: 1.5rem; /* Espacio entre los botones */
+  justify-content: center; /* Centra los botones horizontalmente */
+  width: 100%; /* Asegura que el contenedor ocupe todo el ancho */
+  align-items: center; /* Asegura que los botones estén centrados verticalmente */
+  margin-top: 1rem; /* Espacio adicional arriba si es necesario */
+  margin-right: 2rem;
+}
+
+/* Estilo general de los botones */
 .menuGeneralBtn {
   padding: 1rem 2rem;
-  font-size: 1.3rem;
+  font-size: 1rem;
   font-weight: 600;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #7ec8f2, #f1c27d); /* Gradiente más suave entre azul claro y cálido */
+  background: rgb(0, 0, 136); /* Gradiente más suave entre azul claro y cálido */
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
@@ -117,36 +129,17 @@
   overflow: hidden;
 }
 
-.menuGeneralBtn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.3), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.menuGeneralBtn:hover::after {
-  opacity: 1;
-}
-
 .menuGeneralBtn:hover {
   transform: translateY(-4px) scale(1.08);
   box-shadow: 0 10px 25px rgba(126, 200, 242, 0.5); /* Sombra más marcada */
-  background: linear-gradient(135deg, #f1c27d, #7ec8f2); /* Inversión suave del gradiente */
+  background: rgb(220, 253, 255); /* Inversión suave del gradiente */
+  color: black;
 }
 
-/* ==== LOGOUT ==== */
-.menuGeneralLogout {
-  position: absolute;
-  bottom: 2rem;
-  right: 2rem;
-  opacity: 0.85;
-  animation: fadeIn 1s ease-out;
-  z-index: 1;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+/* El estilo específico del botón 'Jugar' */
+.menuGeneralBtn.jugarBtn {
+  margin-bottom: 1.5rem; /* Le da un espacio extra abajo */
+  font-size: 2.5rem;
+  padding: 1.5rem 4rem;
+  background: rgb(184, 0, 0);
 }
