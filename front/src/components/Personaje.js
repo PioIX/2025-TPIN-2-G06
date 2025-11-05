@@ -12,7 +12,7 @@ export default function Personaje(props) {
 
   useEffect(() => {
     setEnergiaActual(props.energiaActual);
-  }, [props.energiaActual]); 
+  }, [props.energiaActual]);
 
   const porcentajeVida = (saludActual / props.saludMax) * 100;
   const porcentajeEnergia = (energiaActual / props.energiaMax) * 100;
@@ -37,22 +37,23 @@ export default function Personaje(props) {
         {saludActual} / {props.saludMax} HP
       </p>
 
-      {energiaActual && (
+      {energiaActual >= 0 && (
         <>
           <div className={styles.vidaContainer}>
             <div
               className={clsx(styles.vidaBarra, {
-                [styles.energuia]: true,
+                [styles.energuia]: energiaActual > 0,  // Si hay energía, mostramos el color
+                [styles.energuiaVacia]: energiaActual === 0, // Si no hay energía, barra vacía
               })}
               style={{ width: `${porcentajeEnergia}%` }}
             />
           </div>
-
           <p className={styles.vidaTexto}>
             {energiaActual} / {props.energiaMax} ✨
           </p>
         </>
       )}
+
     </div>
   );
 }
