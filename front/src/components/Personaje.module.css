@@ -62,3 +62,8 @@
   color: white;
   text-align: center;
 }
+
+/* Nueva clase para barra vacía de energía */
+.energuiaVacia {
+  background: #ccc; /* Un color gris claro */
+}

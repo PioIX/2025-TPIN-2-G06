@@ -132,16 +132,11 @@ export default function Home() {
         desactivarSala()
       } else {
         setChequeoGanador(true)
-        if (ganador == "gane") {
-          setGanador("empate")
-          desactivarSala()
-        } else {
           console.log("Perdiste");
           setGanador("perdiste")
           setPerdedor()
           desactivarSala()
         }
-      }
     });
 
 
@@ -419,19 +414,6 @@ export default function Home() {
     setTimeout(() => {
       setMostrarNotificacion(false);
     }, 2000);
-  }
-
-  function volverAlMenu() {
-    // Limpiar el flag de esta partida antes de salir
-    const keyPartida = `partida_${idRoom}_${idUsuario}`;
-    sessionStorage.removeItem(keyPartida);
-
-    // Desregistrar antes de salir normalmente
-    if (registradoEnPartida.current && socket && idUsuario) {
-      socket.emit("salirDePartida", { idUsuario });
-      registradoEnPartida.current = false;
-    }
-    router.replace(`/menuGeneral?idUsuario=${idUsuario}`);
   }
 
   function restarVida(accionRival) {
