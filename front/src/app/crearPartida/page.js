@@ -6,6 +6,8 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useSearchParams } from "next/navigation";
 import styles from "./crearPartida.module.css";
+import { useIp } from "@/hooks/useIp";
+
 
 export default function Prueba() {
   const { socket } = useSocket();
@@ -15,15 +17,18 @@ export default function Prueba() {
   const [idRoom, setIdRoom] = useState("");
   const [idPersonaje, setIdPersonaje] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
+  const { ip } = useIp();
+  
   useEffect(() => {
     const paramId = searchParams.get("personaje");
     const paramIdUsuario = searchParams.get("idUsuario");
     setIdPersonaje(paramId);
     setIdUsuario(paramIdUsuario);
   }, []);
+
   async function manejarPartida(tipo) {
     try {
-      const res = await fetch("http://localhost:4000/entrarPartida", {
+      const res = await fetch(`http://${ip}:4000/entrarPartida`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

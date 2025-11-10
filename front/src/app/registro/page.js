@@ -5,6 +5,7 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { useRouter } from "next/navigation";
 import styles from "./registro.module.css";
+import { useIp } from "@/hooks/useIp";  // Importa el hook useIp
 
 
 export default function Registro() {
@@ -13,6 +14,9 @@ export default function Registro() {
   const [contraseña, setContraseña] = useState("");
   const [popup, setPopup] = useState({ open: false, title: "", message: "" });
   const router = useRouter();
+
+  // Llama al hook useIp y desestructura la IP
+  const { ip } = useIp();  // Ahora obtenemos la IP del hook
 
   const showPopup = (title, message) => {
     setPopup({ open: true, title, message });
@@ -29,7 +33,12 @@ export default function Registro() {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/usuariosRegistro", {
+      // Verifica si la IP está definida antes de hacer la petición
+      if (!ip) {
+        throw new Error("IP no definida");
+      }
+
+      const response = await fetch(`http://${ip}:4000/usuariosRegistro`, {  // Usamos la IP dinámica aquí
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
