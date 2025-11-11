@@ -63,12 +63,12 @@
 }
 
 .victoria {
-  background: linear-gradient(135deg, #2beb4b, #00a840); /* Turquesa más dinámico */
+  background: linear-gradient(135deg, #56ff73, #0a5326); /* Turquesa más dinámico */
   color: #ffffff; /* Texto blanco */
 }
 
 .derrota {
-  background: linear-gradient(135deg, #9e2121, #f00000); /* Turquesa más dinámico */
+  background: linear-gradient(135deg, #661717, #ff5151); /* Turquesa más dinámico */
   color: #ffffff; /* Texto blanco */
 }
 

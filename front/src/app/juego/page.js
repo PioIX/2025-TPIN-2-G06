@@ -269,7 +269,7 @@ export default function Home() {
 
   async function encontrarP(id) {
     try {
-      const response = await fetch(`http://ip:4000/encontrarPersonaje`, {
+      const response = await fetch(`http://${ip}:4000/encontrarPersonaje`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idHabilidad: id }),

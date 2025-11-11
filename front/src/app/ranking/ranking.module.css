@@ -60,7 +60,7 @@
 }
 
 .rankingTable tr:hover {
-    background-color: #8b5cf6;
+    background-color: #f65c5c;
     /* Hover con un color sutil */
     transition: background-color 0.3s ease;
 }

@@ -418,16 +418,17 @@ app.post('/setearPerdedor', async function (req, res) {
 // ===============================
 // SOCKET.IO CONFIG
 // ===============================
-const server = app.listen(port, () => {
-    console.log(`Servidor NodeJS corriendo en http://localhost:${port}/`);
+// ✅ DESPUÉS (escucha en todas las interfaces)
+const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Servidor NodeJS corriendo en http://0.0.0.0:${port}/`);
 });
 
 const io = require("socket.io")(server, {
     cors: {
-        origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://10.1.5.132:3001"],
-        methods: ["GET", "POST"],
-        credentials: true,
-    },
+    origin: "*", // Permite conexiones desde cualquier origen
+    methods: ["GET", "POST"],
+    credentials: true,
+},
 });
 
 io.use((socket, next) => {
