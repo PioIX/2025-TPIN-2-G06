@@ -16,7 +16,7 @@ El proceso de autenticación se realiza mediante una solicitud al backend, que v
 Si los datos son correctos, el jugador es redirigido al **Menú General**.  
 Si la validación falla, se muestra un **popup** con un mensaje de error indicando si los datos son incorrectos o si hubo algún problema al conectar con el servidor.
 
-![Inicio Sesion](img/Inicio Sesion.PNG)
+![Inicio Sesion](img/Inicio%20Sesion.PNG)
 
 ---
 
@@ -40,7 +40,7 @@ Además, tiene acceso a varias secciones importantes del juego.
 Desde este menú, el jugador puede ver el **ranking** de los jugadores más exitosos, acceder a su **historial de partidas**, y entrar a la sección **Jugar** para seleccionar su personaje y comenzar una nueva partida.  
 También puede cerrar sesión desde esta misma página si lo desea.
 
-![Menú General](img/Menu general.PNG)
+![Menú General](img/Menu%20general.PNG)
 
 ---
 
