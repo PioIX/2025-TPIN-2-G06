@@ -72,7 +72,7 @@ export default function Home() {
   // Detectar cuando ambos personajes están listos
   useEffect(() => {
     if (personaje && personajeRival && !juegoIniciado) {
-      console.log("✅ ¡Ambos personajes cargados! Juego iniciado");
+      console.log("¡Ambos personajes cargados! Juego iniciado");
       setJuegoIniciado(true);
     }
   }, [personaje, personajeRival]);
@@ -144,10 +144,10 @@ export default function Home() {
 
 
     socket.on("partidaCancelada", (data) => {
-      console.warn("❌ Partida cancelada:", data.motivo);
+      console.warn("Partida cancelada:", data.motivo);
       alert("desconexión detectada, partida cancelada");
 
-      // Desregistrar antes de salir
+      
       if (registradoEnPartida.current) {
         socket.emit("salirDePartida", { idUsuario });
         registradoEnPartida.current = false;
@@ -201,7 +201,7 @@ export default function Home() {
       console.log("⚠️ Recarga detectada durante el juego");
       yaDetectoRecarga.current = true;
 
-      // Limpiar el flag INMEDIATAMENTE
+      
       sessionStorage.removeItem(keyPartida);
 
       if (socket && idUsuario && idRoom && registradoEnPartida.current) {
@@ -297,9 +297,9 @@ export default function Home() {
       });
 
       const data = await response.json();
-      console.log("✅ Sala desactivada:", data);
+      console.log("Sala desactivada:", data);
     } catch (err) {
-      console.error("❌ Error al desactivar sala:", err);
+      console.error("Error al desactivar sala:", err);
     }
   }
   async function encontrarIdRival() {
