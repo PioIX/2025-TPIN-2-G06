@@ -8,6 +8,7 @@ import styles from "./juego.module.css";
 import { useSocket } from "@/hooks/useSocket";
 import { useRouter } from "next/navigation";
 import clsx from 'clsx';
+import { useIp } from "@/hooks/useIp";
 
 
 
@@ -33,6 +34,7 @@ export default function Home() {
   const [chequeoGandor, setChequeoGanador] = useState(false);
   const [ganador, setGanador] = useState("");
   const router = useRouter();
+  const {ip} = useIp();
 
 
   // Estados para efectos visuales
@@ -267,7 +269,7 @@ export default function Home() {
 
   async function encontrarP(id) {
     try {
-      const response = await fetch("http://localhost:4000/encontrarPersonaje", {
+      const response = await fetch(`http://${ip}:4000/encontrarPersonaje`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idHabilidad: id }),
@@ -286,7 +288,7 @@ export default function Home() {
   // Agregar esta función después de setPerdedor()
   async function desactivarSala() {
     try {
-      const response = await fetch("http://localhost:4000/desactivarSala", {
+      const response = await fetch(`http://${ip}:4000/desactivarSala`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -303,7 +305,7 @@ export default function Home() {
   async function encontrarIdRival() {
     try {
       const response = await fetch(
-        "http://localhost:4000/obtenerPersonajeOtroJugador",
+        `http://${ip}:4000/obtenerPersonajeOtroJugador`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -530,7 +532,7 @@ export default function Home() {
 
   async function actualizarSalas() {
     try {
-      const response = await fetch("http://localhost:4000/actualizarSala", {
+      const response = await fetch(`http://${ip}:4000/actualizarSala`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -545,7 +547,7 @@ export default function Home() {
 
   async function setPerdedor() {
     try {
-      const response = await fetch("http://localhost:4000/setearPerdedor", {
+      const response = await fetch(`http://${ip}:4000/setearPerdedor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

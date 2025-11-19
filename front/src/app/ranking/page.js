@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import styles from "@/app/ranking/ranking.module.css";  // Importar el CSS Module
 import Button from "@/components/Button";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useIp } from "@/hooks/useIp";  // Importamos el hook useIp
 
 export default function Ranking() {
   const [jugadores, setJugadores] = useState([]);
@@ -11,14 +12,20 @@ export default function Ranking() {
   const router = useRouter();
   const idUsuario = searchParams.get("idUsuario");
 
-  
+  // Llamamos al hook useIp para obtener la IP
+  const { ip } = useIp();  // Ahora obtenemos la IP desde el hook
+
   useEffect(() => {
-    obtenerJugadores();
-  }, []);
+    if (ip) {
+      obtenerJugadores();  // Solo realizar la solicitud si la IP está definida
+    } else {
+      console.error("IP no definida.");
+    }
+  }, [ip]);
 
   async function obtenerJugadores() {
     try {
-      const response = await fetch("http://localhost:4000/obtenerPartidas");
+      const response = await fetch(`http://${ip}:4000/obtenerPartidas`);  // Usamos la IP dinámica aquí
       const data = await response.json();
 
       // Calcular total de partidas y winrate
@@ -74,6 +81,5 @@ export default function Ranking() {
         <Button text="Volver" onClick={volverAlMenu} />
       </div>
     </>
-
   );
 }

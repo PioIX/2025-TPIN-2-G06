@@ -5,7 +5,7 @@ import styles from "./tutorial.module.css";
 import Button from "@/components/Button";
 import MenuPelea from "@/components/MenuPelea";
 import Personaje from "@/components/Personaje";
-
+import { useIp } from "@/hooks/useIp";  // Importamos el hook useIp
 
 export default function Tutorial() {
     const router = useRouter();
@@ -15,11 +15,18 @@ export default function Tutorial() {
     const [loading, setLoading] = useState(true);
     const [empieza, setEmpieza] = useState(true); // MenuPelea empieza activo
 
+    // Llamamos al hook useIp para obtener la IP
+    const { ip } = useIp();  // Ahora obtenemos la IP desde el hook
+
     // Cargar personaje del backend
     useEffect(() => {
         const fetchPersonaje = async () => {
+            if (!ip) {
+                console.error("IP no definida.");
+                return;
+            }
             try {
-                const res = await fetch("http://localhost:4000/encontrarPersonaje", {
+                const res = await fetch(`http://${ip}:4000/encontrarPersonaje`, {  // Usamos la IP dinámica aquí
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ idHabilidad: 1 }),
@@ -33,14 +40,14 @@ export default function Tutorial() {
             }
         };
         fetchPersonaje();
-    }, []);
+    }, [ip]);  // Aseguramos que la IP esté actualizada
 
     const siguiente = () => { if (step < 6) setStep(step + 1); };
     const anterior = () => { if (step > 1) setStep(step - 1); };
 
     // Función para defensa en MenuPelea
     const manejarDefensa = (opciones) => {
-        console.log("Defender activado", opciones);
+        alert("Habilidad o defensa seleccionada");
     };
 
     if (loading) {
@@ -109,7 +116,7 @@ export default function Tutorial() {
                         <ul className={styles.listaHabilidades}>
                             {personaje.habilidades.map((h, i) => (
                                 <li key={i}>
-                                    <strong>{h.nombre}</strong> — {h.daño ? `${h.daño} de daño` : "Defensiva"}{" "}
+                                    <strong>{h.nombre}</strong> — {h.daño && `${h.daño} de daño`}{" "}
                                     {h.es_especial ? "(Especial)" : ""}
                                 </li>
                             ))}

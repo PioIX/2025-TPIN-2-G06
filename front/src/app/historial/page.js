@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams,useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import styles from "@/app/historial/historial.module.css";
 import Button from "@/components/Button";
+import { useIp } from "@/hooks/useIp"; // Importar el hook useIp
 
 export default function HistorialPartidas() {
   const searchParams = useSearchParams();
@@ -12,7 +13,9 @@ export default function HistorialPartidas() {
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState("Todos");
   const router = useRouter();
-  
+
+  // Llamamos al hook useIp para obtener la IP
+  const { ip } = useIp();  // Obtenemos la IP dinámica
 
   useEffect(() => {
     const id = searchParams.get("idUsuario");
@@ -22,15 +25,16 @@ export default function HistorialPartidas() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (idUsuario) {
-      obtenerHistorial(idUsuario);
+    if (idUsuario && ip) {
+      obtenerHistorial(idUsuario, ip);  // Usamos la IP para obtener el historial
+    } else {
     }
-  }, [idUsuario]);
+  }, [idUsuario, ip]);
 
-  async function obtenerHistorial(idUsuario) {
+  async function obtenerHistorial(idUsuario, ip) {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:4000/obtenerHistorial?idUsuario=${idUsuario}`);
+      const response = await fetch(`http://${ip}:4000/obtenerHistorial?idUsuario=${idUsuario}`);  // Usamos la IP dinámica
       if (!response.ok) throw new Error("Error al obtener historial");
       const data = await response.json();
       setPartidas(data);
@@ -107,7 +111,7 @@ export default function HistorialPartidas() {
         </table>
       )}
       <div className={styles.volverMenuGeneral}>
-        <Button text="Volver" onClick={()=>router.push(`/menuGeneral?idUsuario=${idUsuario}`)} />
+        <Button text="Volver" onClick={() => router.push(`/menuGeneral?idUsuario=${idUsuario}`)} />
       </div>
     </div>
   );
